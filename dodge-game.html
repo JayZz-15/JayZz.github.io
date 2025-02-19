@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dodge the Blocks</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { text-align: center; background-color: black; color: white; }
+        canvas { background: gray; display: block; margin: 20px auto; border: 2px solid white; }
+    </style>
+</head>
+<body>
+    <h1>Dodge the Blocks</h1>
+    <p>Use Left & Right Arrow keys to move. Survive as long as you can!</p>
+    <canvas id="gameCanvas" width="400" height="500"></canvas>
+    
+    <script>
+        const canvas = document.getElementById("gameCanvas");
+        const ctx = canvas.getContext("2d");
+
+        const player = { x: 175, y: 450, width: 50, height: 50, speed: 5 };
+        let blocks = [];
+        let score = 0;
+        let gameOver = false;
+
+        function drawPlayer() {
+            ctx.fillStyle = "blue";
+            ctx.fillRect(player.x, player.y, player.width, player.height);
+        }
+
+        function drawBlocks() {
+            ctx.fillStyle = "red";
+            blocks.forEach(block => {
+                ctx.fillRect(block.x, block.y, block.width, block.height);
+            });
+        }
+
+        function moveBlocks() {
+            blocks.forEach(block => {
+                block.y += block.speed;
+                if (block.y > canvas.height) {
+                    blocks.splice(blocks.indexOf(block), 1);
+                    score++;
+                }
+            });
+        }
+
+        function checkCollision() {
+            blocks.forEach(block => {
+                if (player.x < block.x + block.width &&
+                    player.x + player.width > block.x &&
+                    player.y < block.y + block.height &&
+                    player.y + player.height > block.y) {
+                        gameOver = true;
+                }
+            });
+        }
+
+        function gameLoop() {
+            if (gameOver) {
+                ctx.fillStyle = "white";
+                ctx.font = "30px Arial";
+                ctx.fillText("Game Over!", 130, 250);
+                ctx.fillText("Score: " + score, 160, 300);
+                return;
+            }
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            drawPlayer();
+            drawBlocks();
+            moveBlocks();
+            checkCollision();
+
+            requestAnimationFrame(gameLoop);
+        }
+
+        function spawnBlock() {
+            if (!gameOver) {
+                blocks.push({ x: Math.random() * 350, y: 0, width: 50, height: 50, speed: 3 });
+                setTimeout(spawnBlock, 1000 - score * 5);
+            }
+        }
+
+        document.addEventListener("keydown", (e) => {
+            if (e.key === "ArrowLeft" && player.x > 0) player.x -= player.speed * 5;
+            if (e.key === "ArrowRight" && player.x < canvas.width - player.width) player.x += player.speed * 5;
+        });
+
+        spawnBlock();
+        gameLoop();
+    </script>
+</body>
+</html>
