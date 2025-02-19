@@ -6,15 +6,24 @@
     <title>Dodge the Blocks</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { text-align: center; background-color: black; color: white; }
+        body { text-align: center; background-color: black; color: white; font-family: Arial, sans-serif; }
         canvas { background: gray; display: block; margin: 20px auto; border: 2px solid white; }
+        .controls { display: flex; justify-content: center; margin-top: 10px; }
+        .btn { background: blue; color: white; font-size: 20px; padding: 10px 30px; margin: 5px; border: none; cursor: pointer; }
+        .btn:active { background: darkblue; }
     </style>
 </head>
 <body>
     <h1>Dodge the Blocks</h1>
-    <p>Use Left & Right Arrow keys to move. Survive as long as you can!</p>
+    <p>Use Left & Right Arrow keys or touch controls to move. Survive as long as you can!</p>
     <canvas id="gameCanvas" width="400" height="500"></canvas>
     
+    <!-- Mobile Controls -->
+    <div class="controls">
+        <button class="btn" id="leftBtn">⬅ Left</button>
+        <button class="btn" id="rightBtn">➡ Right</button>
+    </div>
+
     <script>
         const canvas = document.getElementById("gameCanvas");
         const ctx = canvas.getContext("2d");
@@ -23,6 +32,8 @@
         let blocks = [];
         let score = 0;
         let gameOver = false;
+        let moveLeft = false;
+        let moveRight = false;
 
         function drawPlayer() {
             ctx.fillStyle = "blue";
@@ -31,9 +42,7 @@
 
         function drawBlocks() {
             ctx.fillStyle = "red";
-            blocks.forEach(block => {
-                ctx.fillRect(block.x, block.y, block.width, block.height);
-            });
+            blocks.forEach(block => ctx.fillRect(block.x, block.y, block.width, block.height));
         }
 
         function moveBlocks() {
@@ -57,6 +66,11 @@
             });
         }
 
+        function updatePlayer() {
+            if (moveLeft && player.x > 0) player.x -= player.speed * 3;
+            if (moveRight && player.x < canvas.width - player.width) player.x += player.speed * 3;
+        }
+
         function gameLoop() {
             if (gameOver) {
                 ctx.fillStyle = "white";
@@ -67,6 +81,7 @@
             }
 
             ctx.clearRect(0, 0, canvas.width, canvas.height);
+            updatePlayer();
             drawPlayer();
             drawBlocks();
             moveBlocks();
@@ -83,12 +98,24 @@
         }
 
         document.addEventListener("keydown", (e) => {
-            if (e.key === "ArrowLeft" && player.x > 0) player.x -= player.speed * 5;
-            if (e.key === "ArrowRight" && player.x < canvas.width - player.width) player.x += player.speed * 5;
+            if (e.key === "ArrowLeft") moveLeft = true;
+            if (e.key === "ArrowRight") moveRight = true;
         });
+
+        document.addEventListener("keyup", (e) => {
+            if (e.key === "ArrowLeft") moveLeft = false;
+            if (e.key === "ArrowRight") moveRight = false;
+        });
+
+        // Mobile button controls
+        document.getElementById("leftBtn").addEventListener("touchstart", () => moveLeft = true);
+        document.getElementById("leftBtn").addEventListener("touchend", () => moveLeft = false);
+        document.getElementById("rightBtn").addEventListener("touchstart", () => moveRight = true);
+        document.getElementById("rightBtn").addEventListener("touchend", () => moveRight = false);
 
         spawnBlock();
         gameLoop();
     </script>
 </body>
 </html>
+
