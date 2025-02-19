@@ -6,18 +6,40 @@
     <title>Dodge the Blocks</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { text-align: center; background-color: black; color: white; font-family: Arial, sans-serif; }
-        canvas { background: gray; display: block; margin: 20px auto; border: 2px solid white; }
+        body { 
+            text-align: center; 
+            font-family: Arial, sans-serif; 
+            background: linear-gradient(to bottom, #222, #111); 
+            color: white; 
+        }
+        h1, p { margin-top: 10px; }
+        canvas { 
+            background: rgba(255, 255, 255, 0.1); 
+            display: block; 
+            margin: 20px auto; 
+            border-radius: 10px; 
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.2); 
+        }
         .controls { display: flex; justify-content: center; margin-top: 10px; }
-        .btn { background: blue; color: white; font-size: 20px; padding: 10px 30px; margin: 5px; border: none; cursor: pointer; }
-        .btn:active { background: darkblue; }
+        .btn { 
+            background: #3498db; 
+            color: white; 
+            font-size: 20px; 
+            padding: 10px 30px; 
+            margin: 5px; 
+            border: none; 
+            cursor: pointer; 
+            border-radius: 5px; 
+            transition: 0.2s; 
+        }
+        .btn:active { background: #217dbb; }
     </style>
 </head>
 <body>
     <h1>Dodge the Blocks</h1>
-    <p>Use Left & Right Arrow keys or touch controls to move. Survive as long as you can!</p>
+    <p>Use WASD, Arrow Keys, or touch buttons to move. Survive as long as you can!</p>
     <canvas id="gameCanvas" width="400" height="500"></canvas>
-    
+
     <!-- Mobile Controls -->
     <div class="controls">
         <button class="btn" id="leftBtn">⬅ Left</button>
@@ -28,7 +50,7 @@
         const canvas = document.getElementById("gameCanvas");
         const ctx = canvas.getContext("2d");
 
-        const player = { x: 175, y: 450, width: 50, height: 50, speed: 5 };
+        const player = { x: 175, y: 450, width: 35, height: 35, speed: 3.5 };
         let blocks = [];
         let score = 0;
         let gameOver = false;
@@ -36,13 +58,18 @@
         let moveRight = false;
 
         function drawPlayer() {
-            ctx.fillStyle = "blue";
+            ctx.fillStyle = "#00ffcc";
+            ctx.shadowBlur = 10;
+            ctx.shadowColor = "#00ffcc";
             ctx.fillRect(player.x, player.y, player.width, player.height);
+            ctx.shadowBlur = 0;
         }
 
         function drawBlocks() {
-            ctx.fillStyle = "red";
-            blocks.forEach(block => ctx.fillRect(block.x, block.y, block.width, block.height));
+            blocks.forEach(block => {
+                ctx.fillStyle = "#ff3333";
+                ctx.fillRect(block.x, block.y, block.width, block.height);
+            });
         }
 
         function moveBlocks() {
@@ -67,8 +94,8 @@
         }
 
         function updatePlayer() {
-            if (moveLeft && player.x > 0) player.x -= player.speed * 3;
-            if (moveRight && player.x < canvas.width - player.width) player.x += player.speed * 3;
+            if (moveLeft && player.x > 0) player.x -= player.speed;
+            if (moveRight && player.x < canvas.width - player.width) player.x += player.speed;
         }
 
         function gameLoop() {
@@ -92,19 +119,26 @@
 
         function spawnBlock() {
             if (!gameOver) {
-                blocks.push({ x: Math.random() * 350, y: 0, width: 50, height: 50, speed: 3 });
+                let size = Math.random() * 40 + 20; // Random block sizes (20px - 60px)
+                blocks.push({ 
+                    x: Math.random() * (400 - size), 
+                    y: 0, 
+                    width: size, 
+                    height: size, 
+                    speed: Math.random() * 2 + 2 
+                });
                 setTimeout(spawnBlock, 1000 - score * 5);
             }
         }
 
         document.addEventListener("keydown", (e) => {
-            if (e.key === "ArrowLeft") moveLeft = true;
-            if (e.key === "ArrowRight") moveRight = true;
+            if (e.key === "ArrowLeft" || e.key === "a") moveLeft = true;
+            if (e.key === "ArrowRight" || e.key === "d") moveRight = true;
         });
 
         document.addEventListener("keyup", (e) => {
-            if (e.key === "ArrowLeft") moveLeft = false;
-            if (e.key === "ArrowRight") moveRight = false;
+            if (e.key === "ArrowLeft" || e.key === "a") moveLeft = false;
+            if (e.key === "ArrowRight" || e.key === "d") moveRight = false;
         });
 
         // Mobile button controls
@@ -118,4 +152,3 @@
     </script>
 </body>
 </html>
-
