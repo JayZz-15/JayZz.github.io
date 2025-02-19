@@ -20,12 +20,12 @@
             border-radius: 10px; 
             box-shadow: 0 0 10px rgba(255, 255, 255, 0.2); 
         }
-        .controls { display: flex; justify-content: center; margin-top: 10px; }
+        .controls, .game-over { display: flex; justify-content: center; margin-top: 10px; }
         .btn { 
             background: #3498db; 
             color: white; 
             font-size: 20px; 
-            padding: 10px 30px; 
+            padding: 10px 20px; 
             margin: 5px; 
             border: none; 
             cursor: pointer; 
@@ -33,6 +33,7 @@
             transition: 0.2s; 
         }
         .btn:active { background: #217dbb; }
+        .game-over { display: none; flex-direction: column; align-items: center; }
     </style>
 </head>
 <body>
@@ -44,6 +45,13 @@
     <div class="controls">
         <button class="btn" id="leftBtn">⬅ Left</button>
         <button class="btn" id="rightBtn">➡ Right</button>
+    </div>
+
+    <!-- Game Over Screen -->
+    <div class="game-over" id="gameOverScreen">
+        <h2>Game Over!</h2>
+        <p id="finalScore"></p>
+        <button class="btn" onclick="location.href='index.html'">🏠 Back to Menu</button>
     </div>
 
     <script>
@@ -88,7 +96,7 @@
                     player.x + player.width > block.x &&
                     player.y < block.y + block.height &&
                     player.y + player.height > block.y) {
-                        gameOver = true;
+                        endGame();
                 }
             });
         }
@@ -99,13 +107,7 @@
         }
 
         function gameLoop() {
-            if (gameOver) {
-                ctx.fillStyle = "white";
-                ctx.font = "30px Arial";
-                ctx.fillText("Game Over!", 130, 250);
-                ctx.fillText("Score: " + score, 160, 300);
-                return;
-            }
+            if (gameOver) return;
 
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             updatePlayer();
@@ -119,7 +121,7 @@
 
         function spawnBlock() {
             if (!gameOver) {
-                let size = Math.random() * 40 + 20; // Random block sizes (20px - 60px)
+                let size = Math.random() * 40 + 20;
                 blocks.push({ 
                     x: Math.random() * (400 - size), 
                     y: 0, 
@@ -129,6 +131,12 @@
                 });
                 setTimeout(spawnBlock, 1000 - score * 5);
             }
+        }
+
+        function endGame() {
+            gameOver = true;
+            document.getElementById("finalScore").innerText = "Score: " + score;
+            document.getElementById("gameOverScreen").style.display = "flex";
         }
 
         document.addEventListener("keydown", (e) => {
