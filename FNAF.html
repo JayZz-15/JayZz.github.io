@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Simple FNAF Game</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      background: #000;
+      color: #fff;
+      margin: 0;
+      padding: 20px;
+    }
+    #cameraDisplay {
+      width: 300px;
+      height: 200px;
+      border: 2px solid #fff;
+      margin: 20px auto;
+      display: block;
+    }
+    button {
+      margin: 10px;
+      padding: 10px 20px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <h1>Simple FNAF Game</h1>
+  <p>Switch cameras to survive!</p>
+  <!-- Camera view; replace the src values with your actual images -->
+  <img id="cameraDisplay" src="office.jpg" alt="Camera View">
+  <div>
+    <button onclick="switchCamera('office')">Office</button>
+    <button onclick="switchCamera('cam1')">Camera 1</button>
+    <button onclick="switchCamera('cam2')">Camera 2</button>
+  </div>
+  <p>Time Survived: <span id="timer">0</span> seconds</p>
+
+  <script>
+    let currentCamera = 'office';
+    let gameOver = false;
+    let timeSurvived = 0;
+    let animatronicEvent = false;
+
+    // Function to switch camera views
+    function switchCamera(cam) {
+      if (gameOver) return;
+      currentCamera = cam;
+      updateCamera();
+    }
+    
+    // Update the displayed image based on the current camera
+    function updateCamera() {
+      const cameraDisplay = document.getElementById('cameraDisplay');
+      // If a jumpscare is active, don't override it.
+      if (gameOver) return;
+      if (animatronicEvent && currentCamera === 'office') {
+        // If an event is active and the player is in the office, trigger game over.
+        gameOver = true;
+        cameraDisplay.src = 'jumpscare.jpg'; // Replace with your jumpscare image
+        alert('Game Over! You were caught!');
+      } else {
+        // Change the camera image based on the current camera.
+        if (currentCamera === 'office') {
+          cameraDisplay.src = 'office.jpg';
+        } else if (currentCamera === 'cam1') {
+          cameraDisplay.src = 'cam1.jpg';
+        } else if (currentCamera === 'cam2') {
+          cameraDisplay.src = 'cam2.jpg';
+        }
+      }
+    }
+
+    // Timer to count survival time and trigger random animatronic events
+    setInterval(function() {
+      if (gameOver) return;
+      timeSurvived++;
+      document.getElementById('timer').innerText = timeSurvived;
+      
+      // Start triggering an event after 10 seconds
+      if (timeSurvived > 10 && Math.random() < 0.1 && !animatronicEvent) {
+        animatronicEvent = true;
+        // Give the player 3 seconds to switch away from the dangerous view.
+        setTimeout(() => {
+          if (currentCamera === 'office') {
+            gameOver = true;
+            document.getElementById('cameraDisplay').src = 'jumpscare.jpg';
+            alert('Game Over! You were caught!');
+          }
+          animatronicEvent = false;
+        }, 3000);
+      }
+    }, 1000);
+  </script>
+</body>
+</html>
