@@ -22,20 +22,39 @@
         const playerSize = 20;
         const speed = 2;
         const gravity = 0.5;
+        let score = 0;
+        let alivePlayers = 4;
 
         let players = [
-            { x: 50, y: 50, vx: 0, vy: 0, color: "blue", gravityX: 0, gravityY: gravity },  // Top left
-            { x: 50, y: gridSize + 50, vx: 0, vy: 0, color: "green", gravityX: gravity, gravityY: 0 }, // Bottom left
-            { x: gridSize + 50, y: gridSize + 50, vx: 0, vy: 0, color: "red", gravityX: 0, gravityY: -gravity }, // Bottom right
-            { x: gridSize + 50, y: 50, vx: 0, vy: 0, color: "yellow", gravityX: -gravity, gravityY: 0 } // Top right
+            { x: gridSize / 2, y: gridSize / 2, vx: 0, vy: 0, color: "blue", gravityX: 0, gravityY: gravity, alive: true },  // Top left
+            { x: gridSize / 2, y: gridSize + gridSize / 2, vx: 0, vy: 0, color: "green", gravityX: gravity, gravityY: 0, alive: true }, // Bottom left
+            { x: gridSize + gridSize / 2, y: gridSize + gridSize / 2, vx: 0, vy: 0, color: "red", gravityX: 0, gravityY: -gravity, alive: true }, // Bottom right
+            { x: gridSize + gridSize / 2, y: gridSize / 2, vx: 0, vy: 0, color: "yellow", gravityX: -gravity, gravityY: 0, alive: true } // Top right
         ];
 
+        let enemies = [];
         let keys = {};
+
         window.addEventListener("keydown", (e) => keys[e.key] = true);
         window.addEventListener("keyup", (e) => keys[e.key] = false);
 
+        function spawnEnemy() {
+            let quadrant = Math.floor(Math.random() * 4);
+            let enemy = {
+                x: quadrant % 2 === 0 ? Math.random() * gridSize : gridSize + Math.random() * gridSize,
+                y: quadrant < 2 ? Math.random() * gridSize : gridSize + Math.random() * gridSize,
+                size: 20,
+                speed: 2 + Math.random() * 2,
+                directionX: quadrant % 2 === 0 ? 1 : -1,
+                directionY: quadrant < 2 ? 1 : -1,
+                color: "white"
+            };
+            enemies.push(enemy);
+        }
+
         function update() {
             players.forEach(player => {
+                if (!player.alive) return;
                 player.vx = (keys['d'] ? speed : 0) - (keys['a'] ? speed : 0);
                 player.vy = (keys['s'] ? speed : 0) - (keys['w'] ? speed : 0);
                 player.vx += player.gravityX;
@@ -43,10 +62,28 @@
                 player.x += player.vx;
                 player.y += player.vy;
                 
-                // Keep players inside their respective grids
                 player.x = Math.max(0, Math.min(gridSize - playerSize, player.x));
                 player.y = Math.max(0, Math.min(gridSize - playerSize, player.y));
             });
+            
+            enemies.forEach((enemy, index) => {
+                enemy.x += enemy.directionX * enemy.speed;
+                enemy.y += enemy.directionY * enemy.speed;
+                
+                players.forEach(player => {
+                    if (player.alive && enemy.x < player.x + playerSize && enemy.x + enemy.size > player.x &&
+                        enemy.y < player.y + playerSize && enemy.y + enemy.size > player.y) {
+                        player.alive = false;
+                        alivePlayers--;
+                    }
+                });
+                
+                if (enemy.x < 0 || enemy.x > canvas.width || enemy.y < 0 || enemy.y > canvas.height) {
+                    enemies.splice(index, 1);
+                }
+            });
+            
+            score += alivePlayers;
         }
 
         function draw() {
@@ -58,9 +95,19 @@
             ctx.strokeRect(gridSize, gridSize, gridSize, gridSize);
             
             players.forEach(player => {
+                if (!player.alive) return;
                 ctx.fillStyle = player.color;
                 ctx.fillRect(player.x, player.y, playerSize, playerSize);
             });
+            
+            enemies.forEach(enemy => {
+                ctx.fillStyle = enemy.color;
+                ctx.fillRect(enemy.x, enemy.y, enemy.size, enemy.size);
+            });
+            
+            ctx.fillStyle = "white";
+            ctx.font = "20px Arial";
+            ctx.fillText("Score: " + score, 10, 20);
         }
 
         function gameLoop() {
@@ -68,7 +115,8 @@
             draw();
             requestAnimationFrame(gameLoop);
         }
-
+        
+        setInterval(spawnEnemy, 2000);
         gameLoop();
     </script>
 </body>
