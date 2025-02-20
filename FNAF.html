@@ -31,6 +31,10 @@
     .door-button {
       width: 150px;
     }
+    .camera-button {
+      width: 150px;
+      background-color: #444;
+    }
   </style>
 </head>
 <body>
@@ -40,6 +44,7 @@
     <button class="door-button" onclick="closeLeftDoor()">Close Left Door</button>
     <button class="door-button" onclick="closeFrontDoor()">Close Front Door</button>
     <button class="door-button" onclick="closeRightDoor()">Close Right Door</button>
+    <button class="camera-button" onclick="switchCamera()">Switch Camera</button>
   </div>
   <p>Time Survived: <span id="timer">0</span> seconds</p>
 
@@ -56,6 +61,10 @@
     let leftDoorClosed = false;
     let rightDoorClosed = false;
     let frontDoorClosed = false;
+
+    // Camera state (false = camera off, true = camera on)
+    let cameraActive = false;
+    let currentCamera = 0; // 0 = main office, 1 = left cam, 2 = right cam, 3 = front cam
 
     // Functions to close the doors for 2 seconds.
     function closeLeftDoor() {
@@ -83,17 +92,56 @@
       }, 2000);
     }
 
+    // Switch camera view
+    function switchCamera() {
+      if (cameraActive) {
+        currentCamera = (currentCamera + 1) % 4; // Cycle through 4 possible camera views
+      } else {
+        currentCamera = 0; // Go back to main office view
+      }
+      cameraActive = !cameraActive;
+      drawOffice();
+    }
+
     // Draw the office view.
     function drawOffice() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      if (cameraActive) {
+        drawCameraView();
+      } else {
+        drawMainOffice();
+      }
+    }
+
+    // Draw the camera view (based on the current active camera).
+    function drawCameraView() {
+      ctx.fillStyle = "#000"; // Black background for camera feed
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      ctx.fillStyle = "#fff";
+      ctx.font = "30px Arial";
+      ctx.fillText("Camera View", canvas.width / 2 - 100, 50);
+
+      // Placeholder camera feeds (this is where we'd show the area in the real game)
+      if (currentCamera === 1) {
+        ctx.fillText("Left Camera Feed", 200, 200);
+      } else if (currentCamera === 2) {
+        ctx.fillText("Right Camera Feed", 200, 200);
+      } else if (currentCamera === 3) {
+        ctx.fillText("Front Camera Feed", 200, 200);
+      } else {
+        ctx.fillText("Main Office View", 200, 200);
+      }
+    }
+
+    // Draw the main office view.
+    function drawMainOffice() {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
       // Draw office background.
       ctx.fillStyle = "#444";
       ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-      // Draw the desk in the middle of the office.
-      ctx.fillStyle = "#555";
-      ctx.fillRect(300, 250, 200, 50);  // Desk area
 
       // Draw left door area (left 200px).
       ctx.fillStyle = leftDoorClosed ? "#000" : "#666";
@@ -111,13 +159,16 @@
         ctx.fillText("Right Door", canvas.width - 130, 30);
       }
 
-      // Draw front door area (center bottom, 200px wide x 100px tall).
+      // Draw front door area (center bottom, bigger door).
       ctx.fillStyle = frontDoorClosed ? "#000" : "#666";
-      ctx.fillRect(300, canvas.height - 100, 200, 100);
+      ctx.fillRect(300, canvas.height - 150, 200, 150);
       if (!frontDoorClosed) {
         ctx.fillStyle = "#fff";
-        ctx.fillText("Front Door", 370, canvas.height - 60);
+        ctx.fillText("Front Door", 370, canvas.height - 80);
       }
+
+      // Draw security camera feed placeholders
+      drawCameras();
 
       // If an animatronic event is active, draw a red cube in the corresponding area.
       if (animatronicEvent && animatronicDirection) {
@@ -132,7 +183,7 @@
           y = (canvas.height - cubeSize) / 2;
         } else if (animatronicDirection === "front" && !frontDoorClosed) {
           x = 300 + (200 - cubeSize) / 2;
-          y = canvas.height - 100 + (100 - cubeSize) / 2;
+          y = canvas.height - 150 + (150 - cubeSize) / 2;
         }
         ctx.fillRect(x, y, cubeSize, cubeSize);
       }
@@ -145,11 +196,12 @@
       }
     }
 
-    // Main game loop.
-    function gameLoop() {
-      if (gameOver) return;
-      drawOffice();
-      requestAnimationFrame(gameLoop);
+    // Draw the placeholders for the security cameras
+    function drawCameras() {
+      ctx.fillStyle = "#00ff00"; // Green color for cameras
+      ctx.fillRect(50, 50, 40, 40); // Left Camera
+      ctx.fillRect(700, 50, 40, 40); // Right Camera
+      ctx.fillRect(350, 50, 40, 40); // Front Camera
     }
 
     // Timer and animatronic event logic.
@@ -186,7 +238,7 @@
     }, 1000);
 
     // Start the game loop.
-    gameLoop();
+    drawOffice();
   </script>
 </body>
 </html>
