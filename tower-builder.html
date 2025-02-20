@@ -88,14 +88,8 @@
         }
 
         function moveBlock() {
+            movingBlock.velocity += 0.5; // Increase fall speed gradually
             movingBlock.y += movingBlock.velocity;
-            movingBlock.velocity += movingBlock.fallSpeed * 0.1;
-
-            // Change direction of block movement
-            movingBlock.x += speed * movingBlock.direction;
-            if (movingBlock.x + movingBlock.width >= canvas.width || movingBlock.x <= 0) {
-                movingBlock.direction *= -1;
-            }
         }
 
         function drawBlocks() {
