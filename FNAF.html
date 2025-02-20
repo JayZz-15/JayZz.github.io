@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Simple FNAF Game</title>
   <style>
     body {
@@ -13,7 +13,7 @@
       margin: 0;
       padding: 20px;
     }
-    #cameraDisplay {
+    #cameraCanvas {
       width: 300px;
       height: 200px;
       border: 2px solid #fff;
@@ -30,8 +30,7 @@
 <body>
   <h1>Simple FNAF Game</h1>
   <p>Switch cameras to survive!</p>
-  <!-- Camera view; replace the src values with your actual images -->
-  <img id="cameraDisplay" src="office.jpg" alt="Camera View">
+  <canvas id="cameraCanvas" width="300" height="200"></canvas>
   <div>
     <button onclick="switchCamera('office')">Office</button>
     <button onclick="switchCamera('cam1')">Camera 1</button>
@@ -44,56 +43,73 @@
     let gameOver = false;
     let timeSurvived = 0;
     let animatronicEvent = false;
+    let animatronicCamera = null; // Which camera feed will show the animatronic
 
-    // Function to switch camera views
+    const canvas = document.getElementById("cameraCanvas");
+    const ctx = canvas.getContext("2d");
+
+    // Switch the current camera view
     function switchCamera(cam) {
       if (gameOver) return;
       currentCamera = cam;
-      updateCamera();
+      drawCamera();
     }
-    
-    // Update the displayed image based on the current camera
-    function updateCamera() {
-      const cameraDisplay = document.getElementById('cameraDisplay');
-      // If a jumpscare is active, don't override it.
-      if (gameOver) return;
-      if (animatronicEvent && currentCamera === 'office') {
-        // If an event is active and the player is in the office, trigger game over.
-        gameOver = true;
-        cameraDisplay.src = 'jumpscare.jpg'; // Replace with your jumpscare image
-        alert('Game Over! You were caught!');
-      } else {
-        // Change the camera image based on the current camera.
-        if (currentCamera === 'office') {
-          cameraDisplay.src = 'office.jpg';
-        } else if (currentCamera === 'cam1') {
-          cameraDisplay.src = 'cam1.jpg';
-        } else if (currentCamera === 'cam2') {
-          cameraDisplay.src = 'cam2.jpg';
-        }
+
+    // Draw the current camera view on the canvas.
+    function drawCamera() {
+      // Clear the canvas
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      
+      // Set a background color based on the camera feed
+      if (currentCamera === 'office') {
+        ctx.fillStyle = '#333'; // dark gray for the office
+      } else if (currentCamera === 'cam1') {
+        ctx.fillStyle = '#444'; // slightly lighter for Camera 1
+      } else if (currentCamera === 'cam2') {
+        ctx.fillStyle = '#555'; // even lighter for Camera 2
+      }
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      
+      // If an animatronic event is active and this camera is designated, draw a cube
+      if (animatronicEvent && currentCamera === animatronicCamera) {
+        ctx.fillStyle = '#ff0000'; // red cube as placeholder
+        const cubeSize = 50;
+        // Center the cube
+        const x = (canvas.width - cubeSize) / 2;
+        const y = (canvas.height - cubeSize) / 2;
+        ctx.fillRect(x, y, cubeSize, cubeSize);
       }
     }
 
-    // Timer to count survival time and trigger random animatronic events
+    // Timer: updates survival time and randomly triggers animatronic events
     setInterval(function() {
       if (gameOver) return;
       timeSurvived++;
       document.getElementById('timer').innerText = timeSurvived;
       
-      // Start triggering an event after 10 seconds
+      // After 10 seconds, start triggering events
       if (timeSurvived > 10 && Math.random() < 0.1 && !animatronicEvent) {
+        // Randomly pick one camera feed for the animatronic event
+        const cameras = ['office', 'cam1', 'cam2'];
+        animatronicCamera = cameras[Math.floor(Math.random() * cameras.length)];
         animatronicEvent = true;
-        // Give the player 3 seconds to switch away from the dangerous view.
+        drawCamera();
+        
+        // Give the player 3 seconds to switch away from the dangerous camera.
         setTimeout(() => {
-          if (currentCamera === 'office') {
+          if (currentCamera === animatronicCamera) {
             gameOver = true;
-            document.getElementById('cameraDisplay').src = 'jumpscare.jpg';
-            alert('Game Over! You were caught!');
+            alert('Game Over! You were caught by the animatronic!');
           }
           animatronicEvent = false;
+          drawCamera();
         }, 3000);
       }
+      drawCamera();
     }, 1000);
+
+    // Initial drawing of the camera view
+    drawCamera();
   </script>
 </body>
 </html>
