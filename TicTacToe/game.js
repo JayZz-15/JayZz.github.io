@@ -13,88 +13,48 @@ function loadGameData() {
     }
     if (localStorage.getItem('playerItem')) {
         playerItem = localStorage.getItem('playerItem');
+        updateShopUI(); // Update shop UI based on the item
     }
     document.getElementById('money').textContent = "Money: $" + money;
 }
 
-// Country strength levels
-const countryStrengths = {
-    'USA': 10,
-    'Russia': 8,
-    'China': 9,
-    'Brazil': 5,
-    'India': 6,
-    'Germany': 7,
-    'Canada': 6,
-    'Australia': 4,
-    'Nigeria': 3,
-    'Mexico': 5
-};
+// Update Shop UI to show Equip button instead of Buy
+function updateShopUI() {
+    if (playerItem === 'Square') {
+        document.getElementById('buySquareButton').style.display = 'none';
+        document.getElementById('equipSquareButton').style.display = 'inline-block';
+    }
+    if (playerItem === 'Triangle') {
+        document.getElementById('buyTriangleButton').style.display = 'none';
+        document.getElementById('equipTriangleButton').style.display = 'inline-block';
+    }
+}
 
-// Minimax algorithm for AI with dynamic strength
-const minimax = (board, depth, isMaximizing) => {
-    const winner = checkWinner(board);
-    if (winner === 'X') return -10 + depth;
-    if (winner === 'O') return 10 - depth;
-    if (!board.includes('')) return 0;
-
-    const adjustedDepth = depth * (1 + countryStrength * 0.1); // AI difficulty scaling
-
-    if (isMaximizing) {
-        let best = -Infinity;
-        for (let i = 0; i < board.length; i++) {
-            if (board[i] === '') {
-                board[i] = 'O';
-                const score = minimax(board, adjustedDepth + 1, false);
-                board[i] = '';
-                best = Math.max(best, score);
-            }
-        }
-        return best;
+// Function to buy an item (Square or Triangle)
+function buyItem(item) {
+    if (money >= 10 && item === 'Square' || money >= 15 && item === 'Triangle') {
+        playerItem = item;
+        money -= (item === 'Square' ? 10 : 15);
+        localStorage.setItem('playerItem', playerItem); // Save the item in localStorage
+        updateMoney();
+        updateShopUI(); // Update UI with Equip button
+        alert(`You have purchased the ${item}!`);
     } else {
-        let best = Infinity;
-        for (let i = 0; i < board.length; i++) {
-            if (board[i] === '') {
-                board[i] = 'X';
-                const score = minimax(board, adjustedDepth + 1, true);
-                board[i] = '';
-                best = Math.min(best, score);
-            }
-        }
-        return best;
+        alert("Not enough money!");
     }
-};
+}
 
-// Function to get the best move for the AI
-const bestMove = (board) => {
-    let bestValue = -Infinity;
-    let move = -1;
+// Function to equip an item (Square or Triangle)
+function equipItem(item) {
+    alert(`${item} is now equipped!`);
+    // You can add more logic to apply the skin to the game.
+}
 
-    for (let i = 0; i < board.length; i++) {
-        if (board[i] === '') {
-            board[i] = 'O';
-            const moveValue = minimax(board, 0, false);
-            board[i] = '';
-            if (moveValue > bestValue) {
-                bestValue = moveValue;
-                move = i;
-            }
-        }
-    }
-    return move;
-};
-
-// Handle weaker AI's mistakes for low-strength countries
-const weakCountryMistakes = (board) => {
-    const mistakeChance = Math.random();
-    if (mistakeChance < 0.5) {
-        // 50% chance of making a mistake
-        const availableMoves = board.map((cell, index) => (cell === '') ? index : null).filter(val => val !== null);
-        const randomMove = availableMoves[Math.floor(Math.random() * availableMoves.length)];
-        return randomMove;
-    }
-    return bestMove(board); // Otherwise, use the best move
-};
+// Update money display
+function updateMoney() {
+    document.getElementById('money').textContent = "Money: $" + money;
+    localStorage.setItem('money', money); // Save the money in localStorage
+}
 
 // Check for a winner
 function checkWinner(board) {
@@ -129,9 +89,9 @@ function handlePlayerMove(index) {
     }
 }
 
-// AI's move (use weaker AI for weaker countries)
+// AI's move
 function aiMove() {
-    const move = (countryStrength < 5) ? weakCountryMistakes(gameBoard) : bestMove(gameBoard);
+    const move = bestMove(gameBoard);
     gameBoard[move] = 'O';
     renderBoard();
     if (checkWinner(gameBoard)) {
@@ -154,33 +114,6 @@ function restartGame() {
     gameBoard = ['', '', '', '', '', '', '', '', ''];
     currentPlayer = 'X';
     renderBoard();
-}
-
-// Buy an item (Square or Triangle)
-function buyItem(item) {
-    if (money >= 10) {
-        playerItem = item;
-        money -= 10;
-        localStorage.setItem('playerItem', playerItem); // Save the item in localStorage
-        updateMoney();
-        alert(`You have purchased the ${item}!`);
-    } else {
-        alert("Not enough money!");
-    }
-}
-
-// Update money display
-function updateMoney() {
-    document.getElementById('money').textContent = "Money: $" + money;
-    localStorage.setItem('money', money); // Save the money in localStorage
-}
-
-// Start a fight with a country
-function startFight(country, strength) {
-    currentCountry = country;
-    countryStrength = strength;
-    alert(`You are now fighting against ${country} with strength: ${strength}`);
-    restartGame(); // Restart the game with the new country
 }
 
 // Initialize game data
