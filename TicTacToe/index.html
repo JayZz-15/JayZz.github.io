@@ -8,7 +8,7 @@
 </head>
 <body>
 
-    <div id="main-menu">
+    <div id="main-menu" class="menu">
         <h1>Tic-Tac-Toe War</h1>
         <button onclick="showMenu('gameplay')">Play Game</button>
         <button onclick="showMenu('shop')">Shop</button>
@@ -43,6 +43,15 @@
     <script src="ai.js"></script>
     <script src="shop.js"></script>
     <script src="countries.js"></script>
+
+    <script>
+        function showMenu(menu) {
+            document.querySelectorAll(".menu").forEach(m => m.style.display = "none");
+            document.getElementById(menu).style.display = "block";
+        }
+
+        // Show main menu on page load
+        showMenu("main-menu");
+    </script>
 </body>
 </html>
-
