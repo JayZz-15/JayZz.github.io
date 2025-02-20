@@ -1,7 +1,7 @@
 const cells = document.querySelectorAll('.cell');
 const statusDiv = document.getElementById('status');
 const restartBtn = document.getElementById('restartBtn');
-let currentPlayer = 'X';
+let currentPlayer = 'X'; // 'X' is the player, 'O' is AI
 let gameBoard = ['', '', '', '', '', '', '', '', ''];
 let gameOver = false;
 
@@ -51,17 +51,36 @@ function handleClick(event) {
         gameBoard[index] = currentPlayer;
         renderBoard();
         if (!checkWinner()) {
-            currentPlayer = currentPlayer === 'X' ? 'O' : 'X';
-            statusDiv.textContent = `Player ${currentPlayer}'s turn`;
+            currentPlayer = 'O'; // AI's turn
+            statusDiv.textContent = `AI's turn`;
+            aiMove();
         }
+    }
+}
+
+function aiMove() {
+    // Simple AI that picks a random empty spot
+    let availableMoves = [];
+    gameBoard.forEach((value, index) => {
+        if (value === '') {
+            availableMoves.push(index);
+        }
+    });
+
+    const randomMove = availableMoves[Math.floor(Math.random() * availableMoves.length)];
+    gameBoard[randomMove] = 'O';
+    renderBoard();
+    if (!checkWinner()) {
+        currentPlayer = 'X'; // Player's turn
+        statusDiv.textContent = `Player's turn`;
     }
 }
 
 function restartGame() {
     gameBoard = ['', '', '', '', '', '', '', '', ''];
-    currentPlayer = 'X';
+    currentPlayer = 'X'; // Player starts
     gameOver = false;
-    statusDiv.textContent = `Player ${currentPlayer}'s turn`;
+    statusDiv.textContent = `Player's turn`;
     renderBoard();
 }
 
