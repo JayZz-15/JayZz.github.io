@@ -14,7 +14,7 @@ function loadGameData() {
     if (localStorage.getItem('playerItem')) {
         playerItem = localStorage.getItem('playerItem');
     }
-    document.getElementById('money').textContent = money;
+    document.getElementById('money').textContent = "Money: $" + money;
 }
 
 // Country strength levels
@@ -171,7 +171,7 @@ function buyItem(item) {
 
 // Update money display
 function updateMoney() {
-    document.getElementById('money').textContent = money;
+    document.getElementById('money').textContent = "Money: $" + money;
     localStorage.setItem('money', money); // Save the money in localStorage
 }
 
