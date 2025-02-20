@@ -114,3 +114,4 @@ function restartGame() {
     currentPlayer = 'X'; // Start with Player
     renderBoard();
 }
+
