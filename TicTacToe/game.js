@@ -14,21 +14,33 @@ const countryStrengths = {
     'Nigeria': 3, 'Mexico': 5
 };
 
-// Function to place a bet
-function placeBet() {
-    let betInput = document.getElementById('betAmount').value;
-    let bet = parseInt(betInput);
+function placeBet(amount) {
+    amount = Math.floor(amount); // Ensure it's a whole number
 
-    if (bet > 0 && bet <= money) {
-        currentBet = bet;
-        money -= bet; // Deduct bet from money
-        updateMoney();
-        document.getElementById('betInfo').textContent = `Current Bet: $${currentBet}`;
-        alert(`You placed a bet of $${currentBet}!`);
-    } else {
-        alert("Invalid bet amount!");
+    if (amount <= 0) {
+        alert("You must bet a positive amount!");
+        return;
     }
+    
+    if (amount > money) {
+        alert("You don't have enough money to place this bet!");
+        return;
+    }
+
+    // Simulate a simple 50/50 win/loss scenario
+    const win = Math.random() < 0.5; // 50% chance to win
+    
+    if (win) {
+        money += amount;
+        alert(`You won $${amount}!`);
+    } else {
+        money -= amount;
+        alert(`You lost $${amount}!`);
+    }
+
+    updateMoney();
 }
+
 
 // Minimax algorithm for AI with dynamic strength
 const minimax = (board, depth, isMaximizing) => {
