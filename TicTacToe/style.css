@@ -1,30 +1,48 @@
-* { margin: 0; padding: 0; box-sizing: border-box; font-family: Arial, sans-serif; }
-body { background: black; color: white; text-align: center; display: flex; justify-content: center; flex-direction: column; align-items: center; height: 100vh; }
-h1 { margin-bottom: 20px; }
-
-.board { 
-    display: grid; 
-    grid-template-columns: repeat(3, 100px); 
-    grid-gap: 10px; 
-    justify-content: center; 
-    margin-top: 50px; 
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: Arial, sans-serif;
+}
+body {
+    background: black;
+    color: white;
+    text-align: center;
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    align-items: center;
+    height: 100vh;
+}
+h1 {
+    margin-bottom: 20px;
 }
 
-.cell { 
-    width: 100px; 
-    height: 100px; 
-    background: #333; 
-    display: flex; 
-    align-items: center; 
-    justify-content: center; 
-    font-size: 2em; 
-    cursor: pointer; 
+.board {
+    display: grid;
+    grid-template-columns: repeat(3, 100px);
+    grid-gap: 10px;
+    justify-content: center;
+    margin-top: 50px;
 }
 
-.cell:hover { background: #555; }
+.cell {
+    width: 100px;
+    height: 100px;
+    background: #333;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2em;
+    cursor: pointer;
+}
+
+.cell:hover {
+    background: #555;
+}
 
 .info {
-    margin-top: 20px; 
+    margin-top: 20px;
     font-size: 1.2em;
 }
 
@@ -33,70 +51,29 @@ h1 { margin-bottom: 20px; }
 }
 
 .shop button {
-    margin: 10px;
-    padding: 10px;
-    background: #444;
-    color: white;
+    margin: 5px;
+    padding: 10px 20px;
+    background-color: blue;
     border: none;
+    color: white;
     cursor: pointer;
+    border-radius: 5px;
 }
 
 .shop button:hover {
-    background: #666;
-}
-
-.countries {
-    display: flex;
-    flex-direction: column;
-    margin: 20px;
+    background-color: darkblue;
 }
 
 .country-btn {
-    padding: 10px;
-    margin: 10px;
-    background: #444;
+    margin: 5px;
+    padding: 10px 20px;
+    background-color: green;
     color: white;
     border: none;
     cursor: pointer;
+    border-radius: 5px;
 }
 
 .country-btn:hover {
-    background: #666;
-}
-
-/* PC and Mobile Responsiveness */
-@media (max-width: 768px) {
-    .board {
-        grid-template-columns: repeat(3, 80px);
-    }
-    
-    .cell {
-        width: 80px;
-        height: 80px;
-        font-size: 1.5em;
-    }
-    
-    .info, .shop {
-        font-size: 1em;
-    }
-
-    .countries {
-        display: block;
-    }
-
-    .country-btn {
-        width: 100%;
-        margin: 5px;
-    }
-}
-
-@media (min-width: 769px) {
-    .board {
-        grid-template-columns: repeat(3, 100px);
-    }
-    
-    .cell {
-        width: 100px;
-        height: 100px;
-    }
+    background-color: darkgreen;
 }
