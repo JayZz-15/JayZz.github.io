@@ -1,244 +1,150 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Simple FNAF Office</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      text-align: center;
-      background: #000;
-      color: #fff;
-      margin: 0;
-      padding: 20px;
-    }
-    #officeCanvas {
-      background: #222;
-      display: block;
-      margin: 20px auto;
-      border: 2px solid #fff;
-    }
-    button {
-      margin: 5px;
-      padding: 10px 15px;
-      cursor: pointer;
-      font-size: 16px;
-    }
-    .controls {
-      margin: 20px;
-    }
-    .door-button {
-      width: 150px;
-    }
-    .camera-button {
-      width: 150px;
-      background-color: #444;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FNAF Game</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: Arial, sans-serif; }
+        body { background: black; color: white; text-align: center; }
+        h1 { margin: 20px 0; }
+        .game-container { position: relative; width: 800px; height: 600px; margin: 0 auto; }
+        .office { position: absolute; width: 100%; height: 100%; background: #333; z-index: 2; }
+        .camera { position: absolute; top: 20px; left: 20px; width: 100%; height: 100%; z-index: 1; }
+        .door { width: 100px; height: 200px; background: #666; position: absolute; z-index: 3; }
+        .left-door { left: 0; top: 200px; }
+        .right-door { right: 0; top: 200px; }
+        .animatronic { position: absolute; display: none; z-index: 4; width: 50px; height: 100px; }
+    </style>
 </head>
 <body>
-  <h1>Simple FNAF Office</h1>
-  <canvas id="officeCanvas" width="800" height="500"></canvas>
-  <div class="controls">
-    <button class="door-button" onclick="closeLeftDoor()">Close Left Door</button>
-    <button class="door-button" onclick="closeFrontDoor()">Close Front Door</button>
-    <button class="door-button" onclick="closeRightDoor()">Close Right Door</button>
-    <button class="camera-button" onclick="switchCamera()">Switch Camera</button>
-  </div>
-  <p>Time Survived: <span id="timer">0</span> seconds</p>
+    <h1>FNAF Game</h1>
+    <div class="game-container">
+        <div class="camera">
+            <img id="cameraFeed" src="assets/S.jpg" alt="Camera Feed" style="width: 100%; height: 100%;"/>
+            <img id="animatronic" src="assets/Animatronic.jpg" alt="Animatronic" class="animatronic" style="top: 50%; left: 50%;"/>
+        </div>
+        <div class="office">
+            <div id="leftDoor" class="door left-door"></div>
+            <div id="rightDoor" class="door right-door"></div>
+        </div>
+    </div>
 
-  <script>
-    const canvas = document.getElementById("officeCanvas");
-    const ctx = canvas.getContext("2d");
+    <script>
+        let isLeftDoorClosed = false;
+        let isRightDoorClosed = false;
+        let animatronicVisible = false;
+        let cameraState = "front"; // Possible states: "front", "left", "right"
+        let animatronicPosition = { x: 0, y: 0 }; // Initial position for animatronic (just an example)
 
-    let gameOver = false;
-    let timeSurvived = 0;
-    let animatronicEvent = false;
-    let animatronicDirection = null; // "left", "right", or "front"
+        // References to elements
+        const cameraFeed = document.getElementById("cameraFeed");
+        const animatronic = document.getElementById("animatronic");
+        const leftDoor = document.getElementById("leftDoor");
+        const rightDoor = document.getElementById("rightDoor");
 
-    // Door states (false = open, true = closed)
-    let leftDoorClosed = false;
-    let rightDoorClosed = false;
-    let frontDoorClosed = false;
+        // Switch camera view based on the camera state
+        function switchCamera(cameraType) {
+            if (cameraType === "left") {
+                cameraFeed.src = "assets/C.jpg";
+            } else if (cameraType === "right") {
+                cameraFeed.src = "assets/M.jpg";
+            } else if (cameraType === "front") {
+                cameraFeed.src = "assets/S.jpg";
+            }
 
-    // Camera state (false = camera off, true = camera on)
-    let cameraActive = false;
-    let currentCamera = 0; // 0 = main office, 1 = left cam, 2 = right cam, 3 = front cam
-
-    // Functions to close the doors for 2 seconds.
-    function closeLeftDoor() {
-      leftDoorClosed = true;
-      drawOffice();
-      setTimeout(() => {
-        leftDoorClosed = false;
-        drawOffice();
-      }, 2000);
-    }
-    function closeRightDoor() {
-      rightDoorClosed = true;
-      drawOffice();
-      setTimeout(() => {
-        rightDoorClosed = false;
-        drawOffice();
-      }, 2000);
-    }
-    function closeFrontDoor() {
-      frontDoorClosed = true;
-      drawOffice();
-      setTimeout(() => {
-        frontDoorClosed = false;
-        drawOffice();
-      }, 2000);
-    }
-
-    // Switch camera view
-    function switchCamera() {
-      if (cameraActive) {
-        currentCamera = (currentCamera + 1) % 4; // Cycle through 4 possible camera views
-      } else {
-        currentCamera = 0; // Go back to main office view
-      }
-      cameraActive = !cameraActive;
-      drawOffice();
-    }
-
-    // Draw the office view.
-    function drawOffice() {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-      if (cameraActive) {
-        drawCameraView();
-      } else {
-        drawMainOffice();
-      }
-    }
-
-    // Draw the camera view (based on the current active camera).
-    function drawCameraView() {
-      ctx.fillStyle = "#000"; // Black background for camera feed
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-      ctx.fillStyle = "#fff";
-      ctx.font = "30px Arial";
-      ctx.fillText("Camera View", canvas.width / 2 - 100, 50);
-
-      // Placeholder camera feeds (this is where we'd show the area in the real game)
-      if (currentCamera === 1) {
-        ctx.fillText("Left Camera Feed", 200, 200);
-      } else if (currentCamera === 2) {
-        ctx.fillText("Right Camera Feed", 200, 200);
-      } else if (currentCamera === 3) {
-        ctx.fillText("Front Camera Feed", 200, 200);
-      } else {
-        ctx.fillText("Main Office View", 200, 200);
-      }
-    }
-
-    // Draw the main office view.
-    function drawMainOffice() {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-      // Draw office background.
-      ctx.fillStyle = "#444";
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-      // Draw left door area (left 200px).
-      ctx.fillStyle = leftDoorClosed ? "#000" : "#666";
-      ctx.fillRect(0, 0, 200, canvas.height);
-      if (!leftDoorClosed) {
-        ctx.fillStyle = "#fff";
-        ctx.fillText("Left Door", 70, 30);
-      }
-
-      // Draw right door area (right 200px).
-      ctx.fillStyle = rightDoorClosed ? "#000" : "#666";
-      ctx.fillRect(canvas.width - 200, 0, 200, canvas.height);
-      if (!rightDoorClosed) {
-        ctx.fillStyle = "#fff";
-        ctx.fillText("Right Door", canvas.width - 130, 30);
-      }
-
-      // Draw front door area (center bottom, bigger door).
-      ctx.fillStyle = frontDoorClosed ? "#000" : "#666";
-      ctx.fillRect(300, canvas.height - 150, 200, 150);
-      if (!frontDoorClosed) {
-        ctx.fillStyle = "#fff";
-        ctx.fillText("Front Door", 370, canvas.height - 80);
-      }
-
-      // Draw security camera feed placeholders
-      drawCameras();
-
-      // If an animatronic event is active, draw a red cube in the corresponding area.
-      if (animatronicEvent && animatronicDirection) {
-        ctx.fillStyle = "#ff0000"; // red cube as placeholder
-        const cubeSize = 50;
-        let x, y;
-        if (animatronicDirection === "left" && !leftDoorClosed) {
-          x = (200 - cubeSize) / 2;
-          y = (canvas.height - cubeSize) / 2;
-        } else if (animatronicDirection === "right" && !rightDoorClosed) {
-          x = canvas.width - 200 + (200 - cubeSize) / 2;
-          y = (canvas.height - cubeSize) / 2;
-        } else if (animatronicDirection === "front" && !frontDoorClosed) {
-          x = 300 + (200 - cubeSize) / 2;
-          y = canvas.height - 150 + (150 - cubeSize) / 2;
+            // Check if animatronic should appear on this camera
+            if (animatronicInView(cameraType)) {
+                animatronic.style.display = "block";
+            } else {
+                animatronic.style.display = "none";
+            }
         }
-        ctx.fillRect(x, y, cubeSize, cubeSize);
-      }
 
-      // If game over, overlay a game-over message.
-      if (gameOver) {
-        ctx.fillStyle = "#ff0000";
-        ctx.font = "40px Arial";
-        ctx.fillText("GAME OVER", canvas.width / 2 - 120, canvas.height / 2);
-      }
-    }
+        // Check if animatronic should be visible based on the camera type
+        function animatronicInView(cameraType) {
+            // Example: animatronic appears in front or at left/right camera based on some conditions
+            if (cameraType === "front" && animatronicPosition.x >= 200 && animatronicPosition.x <= 600) {
+                return true;
+            } else if (cameraType === "left" && animatronicPosition.x < 200) {
+                return true;
+            } else if (cameraType === "right" && animatronicPosition.x > 600) {
+                return true;
+            }
+            return false;
+        }
 
-    // Draw the placeholders for the security cameras
-    function drawCameras() {
-      ctx.fillStyle = "#00ff00"; // Green color for cameras
-      ctx.fillRect(50, 50, 40, 40); // Left Camera
-      ctx.fillRect(700, 50, 40, 40); // Right Camera
-      ctx.fillRect(350, 50, 40, 40); // Front Camera
-    }
+        // Function to close the left door
+        function closeLeftDoor() {
+            isLeftDoorClosed = true;
+            leftDoor.style.background = "#444"; // Darker to indicate it's closed
+            // Prevent animatronic from getting closer if the door is closed
+            if (animatronicPosition.x <= 200) {
+                animatronicPosition.x = 200; // Stop animatronic movement if it's close
+            }
+        }
 
-    // Timer and animatronic event logic.
-    setInterval(function() {
-      if (gameOver) return;
-      timeSurvived++;
-      document.getElementById("timer").innerText = timeSurvived;
+        // Function to open the left door
+        function openLeftDoor() {
+            isLeftDoorClosed = false;
+            leftDoor.style.background = "#666"; // Lighter to indicate it's open
+        }
 
-      // After 10 seconds, occasionally trigger an animatronic event.
-      if (timeSurvived > 10 && Math.random() < 0.1 && !animatronicEvent) {
-        // Randomly choose a door for the animatronic to appear.
-        const directions = ["left", "right", "front"];
-        animatronicDirection = directions[Math.floor(Math.random() * directions.length)];
-        animatronicEvent = true;
-        drawOffice();
+        // Function to close the right door
+        function closeRightDoor() {
+            isRightDoorClosed = true;
+            rightDoor.style.background = "#444"; // Darker to indicate it's closed
+            // Prevent animatronic from getting closer if the door is closed
+            if (animatronicPosition.x >= 600) {
+                animatronicPosition.x = 600; // Stop animatronic movement if it's close
+            }
+        }
 
-        // Give the player 3 seconds to close the corresponding door.
-        setTimeout(() => {
-          // If the door is open when the event resolves, game over.
-          if (
-            (animatronicDirection === "left" && !leftDoorClosed) ||
-            (animatronicDirection === "right" && !rightDoorClosed) ||
-            (animatronicDirection === "front" && !frontDoorClosed)
-          ) {
-            gameOver = true;
-            drawOffice();
-            alert("Game Over! An animatronic got you!");
-          }
-          animatronicEvent = false;
-          animatronicDirection = null;
-          drawOffice();
-        }, 3000);
-      }
-    }, 1000);
+        // Function to open the right door
+        function openRightDoor() {
+            isRightDoorClosed = false;
+            rightDoor.style.background = "#666"; // Lighter to indicate it's open
+        }
 
-    // Start the game loop.
-    drawOffice();
-  </script>
+        // Event listeners for closing/opening doors
+        leftDoor.addEventListener("click", function () {
+            if (isLeftDoorClosed) {
+                openLeftDoor();
+            } else {
+                closeLeftDoor();
+            }
+        });
+
+        rightDoor.addEventListener("click", function () {
+            if (isRightDoorClosed) {
+                openRightDoor();
+            } else {
+                closeRightDoor();
+            }
+        });
+
+        // Update the game loop (you can make it more complex later)
+        function gameLoop() {
+            // Check if animatronic is close enough to the player to jump scare them
+            if ((isLeftDoorClosed && animatronicPosition.x <= 200) || (isRightDoorClosed && animatronicPosition.x >= 600)) {
+                alert("The animatronic got you!");
+                // Reset the game or handle game over logic here
+            }
+
+            // Simulate animatronic movement
+            if (!isLeftDoorClosed && !isRightDoorClosed) {
+                animatronicPosition.x += 1; // Move the animatronic towards the player slowly
+            }
+
+            // Call the switchCamera function based on your game state
+            switchCamera(cameraState);
+
+            // Re-run the game loop
+            requestAnimationFrame(gameLoop);
+        }
+
+        // Start the game loop
+        gameLoop();
+    </script>
 </body>
 </html>
