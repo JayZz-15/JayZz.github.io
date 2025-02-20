@@ -43,8 +43,16 @@
 
     <div class="shop">
         <h3>Shop</h3>
-        <button onclick="buyItem('Square')">Buy Square ($10)</button>
-        <button onclick="buyItem('Triangle')">Buy Triangle ($15)</button>
+        <div id="squareItem">
+            <h2>Square</h2>
+            <button id="buySquareButton" onclick="buyItem('Square')">Buy for $10</button>
+            <button id="equipSquareButton" style="display:none;" onclick="equipItem('Square')">Equip Square</button>
+        </div>
+        <div id="triangleItem">
+            <h2>Triangle</h2>
+            <button id="buyTriangleButton" onclick="buyItem('Triangle')">Buy for $15</button>
+            <button id="equipTriangleButton" style="display:none;" onclick="equipItem('Triangle')">Equip Triangle</button>
+        </div>
     </div>
 
     <script src="game.js"></script>
