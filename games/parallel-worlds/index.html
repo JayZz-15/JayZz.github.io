@@ -26,10 +26,10 @@
         let alivePlayers = 4;
 
         let players = [
-            { x: gridSize / 2, y: gridSize / 2, vx: 0, vy: 0, color: "blue", gravityX: 0, gravityY: gravity, alive: true },  // Top left
-            { x: gridSize / 2, y: gridSize + gridSize / 2, vx: 0, vy: 0, color: "green", gravityX: gravity, gravityY: 0, alive: true }, // Bottom left
-            { x: gridSize + gridSize / 2, y: gridSize + gridSize / 2, vx: 0, vy: 0, color: "red", gravityX: 0, gravityY: -gravity, alive: true }, // Bottom right
-            { x: gridSize + gridSize / 2, y: gridSize / 2, vx: 0, vy: 0, color: "yellow", gravityX: -gravity, gravityY: 0, alive: true } // Top right
+            { x: gridSize / 2 - playerSize / 2, y: gridSize / 2 - playerSize / 2, vx: 0, vy: 0, color: "blue", gravityX: 0, gravityY: gravity, alive: true, bounds: { x: 0, y: 0 } },
+            { x: gridSize / 2 - playerSize / 2, y: gridSize + gridSize / 2 - playerSize / 2, vx: 0, vy: 0, color: "green", gravityX: gravity, gravityY: 0, alive: true, bounds: { x: 0, y: gridSize } },
+            { x: gridSize + gridSize / 2 - playerSize / 2, y: gridSize + gridSize / 2 - playerSize / 2, vx: 0, vy: 0, color: "red", gravityX: 0, gravityY: -gravity, alive: true, bounds: { x: gridSize, y: gridSize } },
+            { x: gridSize + gridSize / 2 - playerSize / 2, y: gridSize / 2 - playerSize / 2, vx: 0, vy: 0, color: "yellow", gravityX: -gravity, gravityY: 0, alive: true, bounds: { x: gridSize, y: 0 } }
         ];
 
         let enemies = [];
@@ -62,8 +62,8 @@
                 player.x += player.vx;
                 player.y += player.vy;
                 
-                player.x = Math.max(0, Math.min(gridSize - playerSize, player.x));
-                player.y = Math.max(0, Math.min(gridSize - playerSize, player.y));
+                player.x = Math.max(player.bounds.x, Math.min(player.bounds.x + gridSize - playerSize, player.x));
+                player.y = Math.max(player.bounds.y, Math.min(player.bounds.y + gridSize - playerSize, player.y));
             });
             
             enemies.forEach((enemy, index) => {
