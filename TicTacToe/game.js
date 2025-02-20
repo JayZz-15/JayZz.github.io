@@ -6,6 +6,17 @@ let playerItem = ''; // Item bought from shop (Square or Triangle)
 let currentCountry = ''; // To store selected country
 let countryStrength = 0; // The strength of the country
 
+// Retrieve data from localStorage or set to defaults if nothing is saved
+function loadGameData() {
+    if (localStorage.getItem('money')) {
+        money = parseInt(localStorage.getItem('money'));
+    }
+    if (localStorage.getItem('playerItem')) {
+        playerItem = localStorage.getItem('playerItem');
+    }
+    document.getElementById('money').textContent = money;
+}
+
 // Country strength levels
 const countryStrengths = {
     'USA': 10,
@@ -150,6 +161,7 @@ function buyItem(item) {
     if (money >= 10) {
         playerItem = item;
         money -= 10;
+        localStorage.setItem('playerItem', playerItem); // Save the item in localStorage
         updateMoney();
         alert(`You have purchased the ${item}!`);
     } else {
@@ -160,6 +172,7 @@ function buyItem(item) {
 // Update money display
 function updateMoney() {
     document.getElementById('money').textContent = money;
+    localStorage.setItem('money', money); // Save the money in localStorage
 }
 
 // Start a fight with a country
@@ -170,3 +183,5 @@ function startFight(country, strength) {
     restartGame(); // Restart the game with the new country
 }
 
+// Initialize game data
+loadGameData();
