@@ -3,20 +3,32 @@ let gameBoard = ['', '', '', '', '', '', '', '', '']; // Empty board
 let currentPlayer = 'X'; // Player's turn starts first
 let money = 0; // Player's money
 let playerShape = 'X'; // Default player shape
+let currentCountry = ''; // To store selected country
+let countryStrength = 0; // The strength of the country
 
-// Minimax algorithm for AI
+// Country strength levels
+const countryStrengths = {
+    'USA': 10,
+    'Russia': 8,
+    'China': 9,
+    'Brazil': 5
+};
+
+// Minimax algorithm for AI with dynamic strength
 const minimax = (board, depth, isMaximizing) => {
     const winner = checkWinner(board);
     if (winner === 'X') return -10 + depth;
     if (winner === 'O') return 10 - depth;
     if (!board.includes('')) return 0;
 
+    const adjustedDepth = depth * (1 + countryStrength * 0.1); // AI difficulty scaling
+
     if (isMaximizing) {
         let best = -Infinity;
         for (let i = 0; i < board.length; i++) {
             if (board[i] === '') {
                 board[i] = 'O';
-                const score = minimax(board, depth + 1, false);
+                const score = minimax(board, adjustedDepth + 1, false);
                 board[i] = '';
                 best = Math.max(best, score);
             }
@@ -27,7 +39,7 @@ const minimax = (board, depth, isMaximizing) => {
         for (let i = 0; i < board.length; i++) {
             if (board[i] === '') {
                 board[i] = 'X';
-                const score = minimax(board, depth + 1, true);
+                const score = minimax(board, adjustedDepth + 1, true);
                 board[i] = '';
                 best = Math.min(best, score);
             }
@@ -122,20 +134,22 @@ function updateMoney() {
     document.getElementById('money').textContent = money;
 }
 
-// Buy a shape for the player
+// Buy a new shape for the player
 function buyShape(shape) {
-    if (shape === 'square' && money >= 10) {
-        playerShape = '□'; // Square shape
+    if (money >= 10) {
+        playerShape = shape;
         money -= 10;
-        alert('You bought the square shape!');
         updateMoney();
-    } else if (shape === 'triangle' && money >= 15) {
-        playerShape = '△'; // Triangle shape
-        money -= 15;
-        alert('You bought the triangle shape!');
-        updateMoney();
+        alert(`You now play as ${shape}!`);
     } else {
-        alert('Not enough money!');
+        alert("Not enough money!");
     }
 }
 
+// Start a fight with a selected country
+function startFight(country, strength) {
+    currentCountry = country;
+    countryStrength = strength;
+    alert(`You are now fighting against ${country} with strength: ${strength}`);
+    restartGame(); // Restart the game with the new country
+}
