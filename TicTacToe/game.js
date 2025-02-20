@@ -1,190 +1,53 @@
-// Global variables
-let gameBoard = ['', '', '', '', '', '', '', '', '']; // Empty board
-let currentPlayer = 'X'; // Player's turn starts first
-let money = 100; // Player starts with some money
-let playerShape = 'X'; // Default player shape
-let currentCountry = ''; // To store selected country
-let countryStrength = 0; // The strength of the country
-let currentBet = 0; // Stores the player's bet
+let board = ["", "", "", "", "", "", "", "", ""];
+let currentPlayer = "X";
+let money = 0;
+let currentCountry = "None";
+let countryStrength = 5;
 
-// Country strength levels
-const countryStrengths = {
-    'USA': 10, 'Russia': 8, 'China': 9, 'Brazil': 5,
-    'India': 6, 'Germany': 7, 'Canada': 6, 'Australia': 4,
-    'Nigeria': 3, 'Mexico': 5
-};
-
-function placeBet(amount) {
-    amount = Math.floor(amount); // Ensure it's a whole number
-
-    if (amount <= 0) {
-        alert("You must bet a positive amount!");
-        return;
-    }
-    
-    if (amount > money) {
-        alert("You don't have enough money to place this bet!");
-        return;
-    }
-
-    // Simulate a simple 50/50 win/loss scenario
-    const win = Math.random() < 0.5; // 50% chance to win
-    
-    if (win) {
-        money += amount;
-        alert(`You won $${amount}!`);
-    } else {
-        money -= amount;
-        alert(`You lost $${amount}!`);
-    }
-
-    updateMoney();
+function showMenu(menu) {
+    document.querySelectorAll(".menu").forEach(m => m.style.display = "none");
+    document.getElementById(menu).style.display = "block";
 }
 
+function startGame() {
+    let boardDiv = document.getElementById("board");
+    boardDiv.innerHTML = "";
+    board = ["", "", "", "", "", "", "", "", ""];
 
-// Minimax algorithm for AI with dynamic strength
-const minimax = (board, depth, isMaximizing) => {
-    const winner = checkWinner(board);
-    if (winner === 'X') return -10 + depth;
-    if (winner === 'O') return 10 - depth;
-    if (!board.includes('')) return 0;
-
-    const adjustedDepth = depth * (1 + countryStrength * 0.1); // AI difficulty scaling
-
-    if (isMaximizing) {
-        let best = -Infinity;
-        for (let i = 0; i < board.length; i++) {
-            if (board[i] === '') {
-                board[i] = 'O';
-                const score = minimax(board, adjustedDepth + 1, false);
-                board[i] = '';
-                best = Math.max(best, score);
-            }
-        }
-        return best;
-    } else {
-        let best = Infinity;
-        for (let i = 0; i < board.length; i++) {
-            if (board[i] === '') {
-                board[i] = 'X';
-                const score = minimax(board, adjustedDepth + 1, true);
-                board[i] = '';
-                best = Math.min(best, score);
-            }
-        }
-        return best;
-    }
-};
-
-// Function to get the best move for the AI
-const bestMove = (board) => {
-    let bestValue = -Infinity;
-    let move = -1;
-
-    for (let i = 0; i < board.length; i++) {
-        if (board[i] === '') {
-            board[i] = 'O';
-            const moveValue = minimax(board, 0, false);
-            board[i] = '';
-            if (moveValue > bestValue) {
-                bestValue = moveValue;
-                move = i;
-            }
-        }
-    }
-    return move;
-};
-
-// Handle weaker AI's mistakes for low-strength countries
-const weakCountryMistakes = (board) => {
-    const mistakeChance = Math.random();
-    if (mistakeChance < 0.5) {
-        // 50% chance of making a mistake
-        const availableMoves = board.map((cell, index) => (cell === '') ? index : null).filter(val => val !== null);
-        const randomMove = availableMoves[Math.floor(Math.random() * availableMoves.length)];
-        return randomMove;
-    }
-    return bestMove(board); // Otherwise, use the best move
-};
-
-// Check for a winner
-function checkWinner(board) {
-    const winPatterns = [
-        [0, 1, 2], [3, 4, 5], [6, 7, 8],
-        [0, 3, 6], [1, 4, 7], [2, 5, 8],
-        [0, 4, 8], [2, 4, 6]
-    ];
-
-    for (let pattern of winPatterns) {
-        const [a, b, c] = pattern;
-        if (board[a] && board[a] === board[b] && board[a] === board[c]) {
-            return board[a]; // Return the winner ('X' or 'O')
-        }
-    }
-    if (!board.includes('')) return 'Tie'; // If board is full and no winner
-    return null;
-}
-
-// Handle the player's move
-function handlePlayerMove(index) {
-    if (gameBoard[index] === '' && currentPlayer === 'X') {
-        gameBoard[index] = playerShape;
-        renderBoard();
-        const winner = checkWinner(gameBoard);
-        if (winner) endGame(winner);
-        else {
-            currentPlayer = 'O';
-            aiMove();
-        }
+    for (let i = 0; i < 9; i++) {
+        let cell = document.createElement("div");
+        cell.className = "cell";
+        cell.dataset.index = i;
+        cell.addEventListener("click", () => playerMove(i));
+        boardDiv.appendChild(cell);
     }
 }
 
-// AI's move
+function playerMove(index) {
+    if (board[index] === "") {
+        board[index] = currentPlayer;
+        updateBoard();
+        setTimeout(() => aiMove(), 500);
+    }
+}
+
 function aiMove() {
-    const move = (countryStrength < 5) ? weakCountryMistakes(gameBoard) : bestMove(gameBoard);
-    gameBoard[move] = 'O';
-    renderBoard();
-    const winner = checkWinner(gameBoard);
-    if (winner) endGame(winner);
-    else {
-        currentPlayer = 'X';
+    let emptyCells = board.map((v, i) => v === "" ? i : null).filter(v => v !== null);
+    let move = emptyCells[Math.floor(Math.random() * emptyCells.length)];
+
+    if (Math.random() > countryStrength / 10) { 
+        move = emptyCells[0]; 
+    }
+
+    board[move] = "O";
+    updateBoard();
+}
+
+function updateBoard() {
+    let cells = document.getElementsByClassName("cell");
+    for (let i = 0; i < 9; i++) {
+        cells[i].innerText = board[i];
     }
 }
 
-// End game function
-function endGame(winner) {
-    if (winner === 'X') {
-        let winnings = currentBet * 2;
-        money += winnings;
-        alert(`You won! You earned $${winnings}`);
-    } else if (winner === 'O') {
-        alert("AI won! You lost your bet.");
-    } else {
-        alert("It's a tie! You got your bet back.");
-        money += currentBet; // Refund bet
-    }
-    updateMoney();
-    currentBet = 0;
-    restartGame();
-}
-
-// Render the board
-function renderBoard() {
-    const cells = document.querySelectorAll('.cell');
-    gameBoard.forEach((value, index) => {
-        cells[index].textContent = value;
-    });
-    document.getElementById('currentPlayer').textContent = currentPlayer === 'X' ? 'Player' : 'AI';
-}
-
-// Restart the game
-function restartGame() {
-    gameBoard = ['', '', '', '', '', '', '', '', ''];
-    currentPlayer = 'X';
-    renderBoard();
-}
-
-// Update money on the UI
-function updateMoney() {
-    document.getElementById('money').textContent = money;
-}
+showMenu("main-menu");
