@@ -17,14 +17,17 @@
         .countries { display: flex; flex-direction: column; margin: 20px; }
         .country-btn { padding: 10px; margin: 10px; background: #444; color: white; border: none; cursor: pointer; }
         .country-btn:hover { background: #666; }
-        .leaderboard { margin-top: 20px; }
-        .leaderboard ul { list-style-type: none; padding: 0; }
-        .leaderboard li { margin: 10px 0; }
     </style>
 </head>
 <body>
     <div>
         <h1>Tic Tac Toe - Complex Version</h1>
+        <div class="info">
+            <label for="playerName">Enter your name: </label>
+            <input type="text" id="playerName" placeholder="Player Name">
+            <button onclick="saveName()">Save Name</button>
+            <p id="playerDisplay"></p>
+        </div>
         <div class="board">
             <div class="cell" onclick="handlePlayerMove(0)"></div>
             <div class="cell" onclick="handlePlayerMove(1)"></div>
@@ -63,12 +66,6 @@
         <button onclick="buyShape('triangle')">Buy Triangle Shape ($15)</button>
     </div>
 
-    <div class="leaderboard">
-        <h3>Global Leaderboard</h3>
-        <ul id="leaderboardList"></ul>
-    </div>
-
     <script src="game.js"></script>
 </body>
 </html>
-
