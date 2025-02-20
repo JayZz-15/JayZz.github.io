@@ -1,70 +1,102 @@
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-    font-family: Arial, sans-serif;
+* { margin: 0; padding: 0; box-sizing: border-box; font-family: Arial, sans-serif; }
+body { background: black; color: white; text-align: center; display: flex; justify-content: center; flex-direction: column; align-items: center; height: 100vh; }
+h1 { margin-bottom: 20px; }
+
+.board { 
+    display: grid; 
+    grid-template-columns: repeat(3, 100px); 
+    grid-gap: 10px; 
+    justify-content: center; 
+    margin-top: 50px; 
 }
 
-body {
-    background: #111;
-    color: white;
-    text-align: center;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    min-height: 100vh;
+.cell { 
+    width: 100px; 
+    height: 100px; 
+    background: #333; 
+    display: flex; 
+    align-items: center; 
+    justify-content: center; 
+    font-size: 2em; 
+    cursor: pointer; 
 }
 
-h1 {
-    margin-bottom: 20px;
+.cell:hover { background: #555; }
+
+.info {
+    margin-top: 20px; 
+    font-size: 1.2em;
 }
 
-#gameContainer {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-}
-
-#board {
-    display: flex;
-    flex-direction: column;
-}
-
-.row {
-    display: flex;
-}
-
-.cell {
-    width: 100px;
-    height: 100px;
-    border: 2px solid #444;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 2rem;
-    cursor: pointer;
-    transition: background-color 0.3s;
-}
-
-.cell:hover {
-    background-color: #555;
-}
-
-#status {
-    margin: 20px;
-}
-
-button {
-    padding: 10px 20px;
+.shop {
     margin-top: 20px;
-    background-color: #3498db;
+}
+
+.shop button {
+    margin: 10px;
+    padding: 10px;
+    background: #444;
     color: white;
     border: none;
     cursor: pointer;
-    border-radius: 5px;
 }
 
-button:hover {
-    background-color: #2980b9;
+.shop button:hover {
+    background: #666;
+}
+
+.countries {
+    display: flex;
+    flex-direction: column;
+    margin: 20px;
+}
+
+.country-btn {
+    padding: 10px;
+    margin: 10px;
+    background: #444;
+    color: white;
+    border: none;
+    cursor: pointer;
+}
+
+.country-btn:hover {
+    background: #666;
+}
+
+/* PC and Mobile Responsiveness */
+@media (max-width: 768px) {
+    .board {
+        grid-template-columns: repeat(3, 80px);
+    }
+    
+    .cell {
+        width: 80px;
+        height: 80px;
+        font-size: 1.5em;
+    }
+    
+    .info, .shop {
+        font-size: 1em;
+    }
+
+    .countries {
+        display: block;
+    }
+
+    .country-btn {
+        width: 100%;
+        margin: 5px;
+    }
+}
+
+@media (min-width: 769px) {
+    .board {
+        grid-template-columns: repeat(3, 100px);
+    }
+    
+    .cell {
+        width: 100px;
+        height: 100px;
+    }
 }
