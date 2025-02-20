@@ -2,7 +2,7 @@
 let gameBoard = ['', '', '', '', '', '', '', '', '']; // Empty board
 let currentPlayer = 'X'; // Player's turn starts first
 let money = 0; // Player's money
-let playerShape = 'X'; // Default player shape
+let playerItem = ''; // Item bought from shop (Square or Triangle)
 let currentCountry = ''; // To store selected country
 let countryStrength = 0; // The strength of the country
 
@@ -105,7 +105,7 @@ function checkWinner(board) {
 // Handle the player's move
 function handlePlayerMove(index) {
     if (gameBoard[index] === '' && currentPlayer === 'X') {
-        gameBoard[index] = playerShape; // Use the current shape
+        gameBoard[index] = 'X'; // Always 'X' for player
         renderBoard();
         if (checkWinner(gameBoard)) {
             money += 20; // Reward money for winning
@@ -133,11 +133,9 @@ function aiMove() {
 // Render the board
 function renderBoard() {
     const cells = document.querySelectorAll('.cell');
-    gameBoard.forEach((value, index) => {
-        cells[index].textContent = value;
+    gameBoard.forEach((cell, index) => {
+        cells[index].textContent = cell;
     });
-
-    document.getElementById('currentPlayer').textContent = currentPlayer === 'X' ? 'Player' : 'AI';
 }
 
 // Restart the game
@@ -147,27 +145,28 @@ function restartGame() {
     renderBoard();
 }
 
-// Update money on the UI
-function updateMoney() {
-    document.getElementById('money').textContent = money;
-}
-
-// Buy a new shape
-function buyShape(shape) {
+// Buy an item (Square or Triangle)
+function buyItem(item) {
     if (money >= 10) {
-        playerShape = shape;
+        playerItem = item;
         money -= 10;
         updateMoney();
-        alert(`You now play as ${shape}!`);
+        alert(`You have purchased the ${item}!`);
     } else {
         alert("Not enough money!");
     }
 }
 
-// Start a fight with a selected country
+// Update money display
+function updateMoney() {
+    document.getElementById('money').textContent = money;
+}
+
+// Start a fight with a country
 function startFight(country, strength) {
     currentCountry = country;
     countryStrength = strength;
     alert(`You are now fighting against ${country} with strength: ${strength}`);
     restartGame(); // Restart the game with the new country
 }
+
