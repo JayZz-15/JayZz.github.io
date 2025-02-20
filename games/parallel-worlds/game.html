@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Parallel Worlds</title>
+  <style>
+    body {
+      margin: 0;
+      background: #222;
+      color: #fff;
+      font-family: Arial, sans-serif;
+      text-align: center;
+    }
+    h1 {
+      margin-top: 20px;
+    }
+    canvas {
+      display: block;
+      margin: 20px auto;
+      border: 2px solid #fff;
+    }
+    /* Mobile control buttons */
+    .mobile-controls {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      flex-wrap: wrap;
+      width: 220px;
+      justify-content: center;
+    }
+    .mobile-controls button {
+      width: 60px;
+      height: 60px;
+      margin: 5px;
+      font-size: 24px;
+      background: #3498db;
+      border: none;
+      color: #fff;
+      border-radius: 10px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Parallel Worlds</h1>
+  <canvas id="gameCanvas" width="800" height="600"></canvas>
+
+  <!-- Mobile Controls -->
+  <div class="mobile-controls">
+    <button id="upBtn">↑</button>
+    <button id="leftBtn">←</button>
+    <button id="downBtn">↓</button>
+    <button id="rightBtn">→</button>
+  </div>
+
+  <script>
+    // Set up the canvas and context
+    const canvas = document.getElementById("gameCanvas");
+    const ctx = canvas.getContext("2d");
+
+    // Define four players, each assigned to a quadrant.
+    // The quadrants are:
+    // Top-Left: x from 0 to 400, y from 0 to 300
+    // Top-Right: x from 400 to 800, y from 0 to 300
+    // Bottom-Left: x from 0 to 400, y from 300 to 600
+    // Bottom-Right: x from 400 to 800, y from 300 to 600
+    const players = [
+      { x: 200, y: 150, color: "red",    quadrant: { xMin: 0,   xMax: 400, yMin: 0,   yMax: 300 } },
+      { x: 600, y: 150, color: "blue",   quadrant: { xMin: 400, xMax: 800, yMin: 0,   yMax: 300 } },
+      { x: 200, y: 450, color: "green",  quadrant: { xMin: 0,   xMax: 400, yMin: 300, yMax: 600 } },
+      { x: 600, y: 450, color: "yellow", quadrant: { xMin: 400, xMax: 800, yMin: 300, yMax: 600 } }
+    ];
+
+    const playerRadius = 15; // size of each character
+    const speed = 3; // movement speed
+
+    // Object to track movement keys
+    const keys = {
+      up: false,
+      down: false,
+      left: false,
+      right: false
+    };
+
+    // Keyboard event listeners (supports WASD and arrow keys)
+    document.addEventListener("keydown", (e) => {
+      const key = e.key.toLowerCase();
+      if (key === "w" || key === "arrowup") keys.up = true;
+      if (key === "s" || key === "arrowdown") keys.down = true;
+      if (key === "a" || key === "arrowleft") keys.left = true;
+      if (key === "d" || key === "arrowright") keys.right = true;
+    });
+    document.addEventListener("keyup", (e) => {
+      const key = e.key.toLowerCase();
+      if (key === "w" || key === "arrowup") keys.up = false;
+      if (key === "s" || key === "arrowdown") keys.down = false;
+      if (key === "a" || key === "arrowleft") keys.left = false;
+      if (key === "d" || key === "arrowright") keys.right = false;
+    });
+
+    // Mobile control buttons (using touch events)
+    document.getElementById("upBtn").addEventListener("touchstart", () => keys.up = true);
+    document.getElementById("upBtn").addEventListener("touchend", () => keys.up = false);
+    document.getElementById("downBtn").addEventListener("touchstart", () => keys.down = true);
+    document.getElementById("downBtn").addEventListener("touchend", () => keys.down = false);
+    document.getElementById("leftBtn").addEventListener("touchstart", () => keys.left = true);
+    document.getElementById("leftBtn").addEventListener("touchend", () => keys.left = false);
+    document.getElementById("rightBtn").addEventListener("touchstart", () => keys.right = true);
+    document.getElementById("rightBtn").addEventListener("touchend", () => keys.right = false);
+
+    // Update all players based on the keys pressed
+    function updatePlayers() {
+      players.forEach(player => {
+        if (keys.up)    player.y -= speed;
+        if (keys.down)  player.y += speed;
+        if (keys.left)  player.x -= speed;
+        if (keys.right) player.x += speed;
+        // Constrain the player within its quadrant
+        if (player.x - playerRadius < player.quadrant.xMin)
+          player.x = player.quadrant.xMin + playerRadius;
+        if (player.x + playerRadius > player.quadrant.xMax)
+          player.x = player.quadrant.xMax - playerRadius;
+        if (player.y - playerRadius < player.quadrant.yMin)
+          player.y = player.quadrant.yMin + playerRadius;
+        if (player.y + playerRadius > player.quadrant.yMax)
+          player.y = player.quadrant.yMax - playerRadius;
+      });
+    }
+
+    // Draw all players on the canvas
+    function drawPlayers() {
+      players.forEach(player => {
+        ctx.beginPath();
+        ctx.arc(player.x, player.y, playerRadius, 0, Math.PI * 2);
+        ctx.fillStyle = player.color;
+        ctx.fill();
+        ctx.closePath();
+      });
+    }
+
+    // Draw borders to visually separate the quadrants
+    function drawQuadrants() {
+      ctx.strokeStyle = "#fff";
+      ctx.lineWidth = 2;
+      // Draw vertical line at x = 400
+      ctx.beginPath();
+      ctx.moveTo(400, 0);
+      ctx.lineTo(400, 600);
+      ctx.stroke();
+      ctx.closePath();
+      // Draw horizontal line at y = 300
+      ctx.beginPath();
+      ctx.moveTo(0, 300);
+      ctx.lineTo(800, 300);
+      ctx.stroke();
+      ctx.closePath();
+    }
+
+    // Main game loop: update positions and redraw the scene
+    function gameLoop() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      drawQuadrants();
+      updatePlayers();
+      drawPlayers();
+      requestAnimationFrame(gameLoop);
+    }
+
+    gameLoop();
+  </script>
+</body>
+</html>
