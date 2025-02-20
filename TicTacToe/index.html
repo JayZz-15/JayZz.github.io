@@ -4,20 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tic Tac Toe - Complex Version</title>
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: Arial, sans-serif; }
-        body { background: black; color: white; text-align: center; display: flex; justify-content: space-between; flex-direction: column; align-items: center; }
-        .board { display: grid; grid-template-columns: repeat(3, 100px); grid-gap: 10px; justify-content: center; margin-top: 50px; }
-        .cell { width: 100px; height: 100px; background: #333; display: flex; align-items: center; justify-content: center; font-size: 2em; cursor: pointer; }
-        .cell:hover { background: #555; }
-        .info { margin-top: 20px; font-size: 1.2em; }
-        .shop { margin-top: 20px; }
-        .shop button { margin: 10px; padding: 10px; background: #444; color: white; border: none; cursor: pointer; }
-        .shop button:hover { background: #666; }
-        .countries { display: flex; flex-direction: column; margin: 20px; }
-        .country-btn { padding: 10px; margin: 10px; background: #444; color: white; border: none; cursor: pointer; }
-        .country-btn:hover { background: #666; }
-    </style>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div>
@@ -36,6 +23,7 @@
         <div class="info">
             <p>Current Player: <span id="currentPlayer">Player</span></p>
             <p>Money: $<span id="money">0</span></p>
+            <p>Shop Money: $<span id="shopMoney">0</span></p>
             <button onclick="restartGame()">Restart Game</button>
         </div>
     </div>
