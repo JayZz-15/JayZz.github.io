@@ -3,54 +3,102 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tic-Tac-Toe War</title>
-    <link rel="stylesheet" href="styles.css">
+    <title>Tic Tac Toe - Complex Version</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: Arial, sans-serif; }
+        body { background: #2a2a2a; color: white; text-align: center; display: flex; justify-content: center; align-items: center; height: 100vh; flex-direction: column; }
+        
+        h1 { font-size: 3em; margin: 20px 0; color: #f1f1f1; }
+
+        .container { display: none; } /* Hide all content initially */
+
+        .board { display: grid; grid-template-columns: repeat(3, 100px); grid-gap: 10px; margin-top: 20px; }
+        .cell { width: 100px; height: 100px; background: #444; display: flex; align-items: center; justify-content: center; font-size: 2.5em; color: white; cursor: pointer; transition: 0.3s; }
+        .cell:hover { background: #666; }
+
+        .button { padding: 10px 20px; margin: 15px 0; background: #444; color: white; border: none; font-size: 1.2em; cursor: pointer; border-radius: 8px; }
+        .button:hover { background: #666; }
+
+        .info { margin-top: 20px; font-size: 1.5em; }
+
+        .game-over { display: flex; justify-content: center; align-items: center; margin-top: 30px; flex-direction: column; }
+        .menu { display: flex; flex-direction: column; justify-content: center; align-items: center; margin-top: 30px; }
+
+        .countries { display: flex; flex-wrap: wrap; justify-content: center; margin: 10px; gap: 10px; }
+        .country-btn { padding: 10px; background: #444; color: white; border: none; cursor: pointer; font-size: 1.2em; border-radius: 8px; }
+        .country-btn:hover { background: #666; }
+
+        .shop { margin-top: 20px; }
+        .shop button { padding: 10px 20px; margin: 10px; background: #444; color: white; border: none; cursor: pointer; border-radius: 8px; font-size: 1.2em; }
+        .shop button:hover { background: #666; }
+
+        .game-over, .menu { font-size: 1.5em; }
+    </style>
 </head>
 <body>
 
-    <div id="main-menu" class="menu">
-        <h1>Tic-Tac-Toe War</h1>
-        <button onclick="showMenu('gameplay')">Play Game</button>
-        <button onclick="showMenu('shop')">Shop</button>
-        <button onclick="showMenu('opponent')">Choose Opponent</button>
+    <!-- Main Menu -->
+    <div id="mainMenu" class="container">
+        <h1>Tic Tac Toe - Complex Version</h1>
+        <button class="button" onclick="startGame()">Start Game</button>
+        <button class="button" onclick="showCountries()">Choose Country</button>
+        <button class="button" onclick="showShop()">Shop</button>
     </div>
 
-    <div id="gameplay" class="menu">
-        <h2>Tic-Tac-Toe Battle</h2>
-        <div id="board"></div>
-        <p id="status"></p>
-        <button onclick="resetGame()">Restart</button>
-        <button onclick="showMenu('main-menu')">Back</button>
+    <!-- Game Screen -->
+    <div id="gameScreen" class="container">
+        <h1>Tic Tac Toe</h1>
+        <div class="board">
+            <div class="cell" onclick="handlePlayerMove(0)"></div>
+            <div class="cell" onclick="handlePlayerMove(1)"></div>
+            <div class="cell" onclick="handlePlayerMove(2)"></div>
+            <div class="cell" onclick="handlePlayerMove(3)"></div>
+            <div class="cell" onclick="handlePlayerMove(4)"></div>
+            <div class="cell" onclick="handlePlayerMove(5)"></div>
+            <div class="cell" onclick="handlePlayerMove(6)"></div>
+            <div class="cell" onclick="handlePlayerMove(7)"></div>
+            <div class="cell" onclick="handlePlayerMove(8)"></div>
+        </div>
+        <div class="info">
+            <p>Current Player: <span id="currentPlayer">Player</span></p>
+            <p>Money: $<span id="money">0</span></p>
+            <button class="button" onclick="restartGame()">Restart Game</button>
+        </div>
     </div>
 
-    <div id="shop" class="menu">
-        <h2>Shop</h2>
-        <p>Buy different shapes for 10 coins!</p>
-        <button onclick="buyShape('Circle')">Circle</button>
-        <button onclick="buyShape('Square')">Square</button>
-        <button onclick="buyShape('Triangle')">Triangle</button>
-        <button onclick="showMenu('main-menu')">Back</button>
+    <!-- Game Over / Victory Screen -->
+    <div id="gameOver" class="container game-over">
+        <p id="gameResult"></p>
+        <button class="button" onclick="restartGame()">Play Again</button>
+        <button class="button" onclick="goToMenu()">Back to Menu</button>
     </div>
 
-    <div id="opponent" class="menu">
-        <h2>Choose Your Opponent</h2>
-        <p>Select a country to fight:</p>
-        <button onclick="startGame('USA', 9)">USA (Strong)</button>
-        <button onclick="startGame('India', 6)">India (Medium)</button>
-        <button onclick="startGame('Nigeria', 3)">Nigeria (Weak)</button>
-        <button onclick="showMenu('main-menu')">Back</button>
+    <!-- Choose Country -->
+    <div id="chooseCountry" class="container">
+        <h1>Choose Country to Fight</h1>
+        <div class="countries">
+            <button class="country-btn" onclick="startFight('USA', 10)">USA</button>
+            <button class="country-btn" onclick="startFight('Russia', 8)">Russia</button>
+            <button class="country-btn" onclick="startFight('China', 9)">China</button>
+            <button class="country-btn" onclick="startFight('Brazil', 5)">Brazil</button>
+            <button class="country-btn" onclick="startFight('India', 6)">India</button>
+            <button class="country-btn" onclick="startFight('Germany', 7)">Germany</button>
+            <button class="country-btn" onclick="startFight('Canada', 6)">Canada</button>
+            <button class="country-btn" onclick="startFight('Australia', 4)">Australia</button>
+            <button class="country-btn" onclick="startFight('Nigeria', 3)">Nigeria</button>
+            <button class="country-btn" onclick="startFight('Mexico', 5)">Mexico</button>
+        </div>
+        <button class="button" onclick="goToMenu()">Back to Menu</button>
+    </div>
+
+    <!-- Shop -->
+    <div id="shop" class="container shop">
+        <h1>Shop</h1>
+        <button class="button" onclick="buyShape('square')">Buy Square Shape ($10)</button>
+        <button class="button" onclick="buyShape('triangle')">Buy Triangle Shape ($15)</button>
+        <button class="button" onclick="goToMenu()">Back to Menu</button>
     </div>
 
     <script src="game.js"></script>
-    <script src="ai.js"></script>
-    <script src="shop.js"></script>
-
-    <script>
-        function showMenu(menu) {
-            document.querySelectorAll(".menu").forEach(m => m.style.display = "none");
-            document.getElementById(menu).style.display = "block";
-        }
-        showMenu("main-menu");
-    </script>
 </body>
 </html>
