@@ -37,17 +37,22 @@
     let blocks = [];
     let currentBlock;
     const blockHeight = 20;
-    // Base block will be placed near the bottom.
+    // The base block is placed near the bottom.
     const baseY = canvas.height - blockHeight - 50;
     let gameOver = false;
     let score = 0;
     let horizontalSpeed = 3;
-    const dropSpeed = 8; // speed of the vertical drop
+    const dropSpeed = 8; // vertical drop speed
+    // scrollOffset is added to all y positions when drawing,
+    // so that the tower appears to shift downward when it nears the top.
+    let scrollOffset = 0;
+    // minVisibleY is the minimum drawn y coordinate for the top block.
+    const minVisibleY = 100;
 
-    // currentBlock will have a state: "moving" (horizontally) or "dropping" (falling vertically)
-    // and a targetY where it should land.
+    // Initialize the game.
     function initGame() {
       blocks = [];
+      scrollOffset = 0;
       // Create the base block at the bottom (centered).
       const baseBlock = {
         x: canvas.width / 2 - 50,
@@ -63,13 +68,13 @@
       requestAnimationFrame(gameLoop);
     }
 
-    // Spawn a new moving block.
+    // Spawn a new moving block that starts at the top.
     function spawnNewBlock() {
       const lastBlock = blocks[blocks.length - 1];
       currentBlock = {
         x: 0,
-        y: 50, // start near the top
-        width: lastBlock.width, // new block starts with the same width as the last block
+        y: 50, // starts near the top (simulation coordinate)
+        width: lastBlock.width, // same width as last block
         height: blockHeight,
         direction: 1,
         state: "moving",
@@ -85,6 +90,7 @@
       }
     }
 
+    // Update game logic.
     function update() {
       if (gameOver) return;
       if (currentBlock.state === "moving") {
@@ -108,7 +114,8 @@
       }
     }
 
-    // Once the block lands, check alignment and trim any overhang.
+    // Settle the block once it lands, trim any overhang,
+    // and adjust the scroll if the tower reaches near the top.
     function settleBlock() {
       const lastBlock = blocks[blocks.length - 1];
       // Determine overlapping region.
@@ -125,23 +132,28 @@
         currentBlock.width = overlap;
         blocks.push(currentBlock);
         score++;
-        // Increase horizontal speed slightly as the game progresses.
+        // Increase horizontal speed slightly for extra challenge.
         horizontalSpeed += 0.1;
+        // Adjust scroll offset if the new block is too high on screen.
+        if (currentBlock.y + scrollOffset < minVisibleY) {
+          scrollOffset = minVisibleY - currentBlock.y;
+        }
         spawnNewBlock();
       }
     }
 
+    // Draw the blocks and score.
     function draw() {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-      // Draw all stacked blocks.
       ctx.fillStyle = "#ffcc00";
+      // Draw all settled blocks with the scroll offset.
       blocks.forEach(block => {
-        ctx.fillRect(block.x, block.y, block.width, block.height);
+        ctx.fillRect(block.x, block.y + scrollOffset, block.width, block.height);
       });
-      // Draw the current moving block.
+      // Draw the current moving or dropping block.
       if (!gameOver && currentBlock) {
         ctx.fillStyle = "#ff5733";
-        ctx.fillRect(currentBlock.x, currentBlock.y, currentBlock.width, currentBlock.height);
+        ctx.fillRect(currentBlock.x, currentBlock.y + scrollOffset, currentBlock.width, currentBlock.height);
       }
       // Display the score.
       ctx.fillStyle = "white";
@@ -172,7 +184,7 @@
     });
     canvas.addEventListener("click", dropBlock);
     canvas.addEventListener("touchstart", (e) => {
-      e.preventDefault();
+      e.preventDefault(); // Prevent page scrolling
       dropBlock();
     });
 
