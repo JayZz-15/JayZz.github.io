@@ -6,7 +6,12 @@
     <title>Tic Tac Toe - Complex Version</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: Arial, sans-serif; }
-        body { background: black; color: white; text-align: center; display: flex; justify-content: space-between; }
+        body { background: black; color: white; display: flex; flex-direction: column; }
+        .game-container { 
+            overflow: auto; 
+            height: 80vh; /* To allow scrolling */
+            padding: 20px;
+        }
         .board { display: grid; grid-template-columns: repeat(3, 100px); grid-gap: 10px; justify-content: center; margin-top: 50px; }
         .cell { width: 100px; height: 100px; background: #333; display: flex; align-items: center; justify-content: center; font-size: 2em; cursor: pointer; }
         .cell:hover { background: #555; }
@@ -17,17 +22,25 @@
         .countries { display: flex; flex-direction: column; margin: 20px; }
         .country-btn { padding: 10px; margin: 10px; background: #444; color: white; border: none; cursor: pointer; }
         .country-btn:hover { background: #666; }
+        .leaderboard { margin-top: 20px; }
+        .leaderboard h3 { font-size: 1.5em; }
+        .leaderboard ul { list-style: none; padding: 0; }
+        .leaderboard li { margin: 5px 0; padding: 5px; background: #333; }
     </style>
 </head>
 <body>
     <div>
         <h1>Tic Tac Toe - Complex Version</h1>
+    </div>
+    <div class="game-container">
         <div class="info">
             <label for="playerName">Enter your name: </label>
             <input type="text" id="playerName" placeholder="Player Name">
             <button onclick="saveName()">Save Name</button>
+            <p id="nameConfirmation"></p>
             <p id="playerDisplay"></p>
         </div>
+
         <div class="board">
             <div class="cell" onclick="handlePlayerMove(0)"></div>
             <div class="cell" onclick="handlePlayerMove(1)"></div>
@@ -39,31 +52,42 @@
             <div class="cell" onclick="handlePlayerMove(7)"></div>
             <div class="cell" onclick="handlePlayerMove(8)"></div>
         </div>
+        
         <div class="info">
             <p>Current Player: <span id="currentPlayer">Player</span></p>
             <p>Money: $<span id="money">0</span></p>
             <button onclick="restartGame()">Restart Game</button>
         </div>
-    </div>
 
-    <div class="countries">
-        <h3>Choose Country to Fight</h3>
-        <button class="country-btn" onclick="startFight('USA', 10)">USA</button>
-        <button class="country-btn" onclick="startFight('Russia', 8)">Russia</button>
-        <button class="country-btn" onclick="startFight('China', 9)">China</button>
-        <button class="country-btn" onclick="startFight('Brazil', 5)">Brazil</button>
-        <button class="country-btn" onclick="startFight('India', 6)">India</button>
-        <button class="country-btn" onclick="startFight('Germany', 7)">Germany</button>
-        <button class="country-btn" onclick="startFight('Canada', 6)">Canada</button>
-        <button class="country-btn" onclick="startFight('Australia', 4)">Australia</button>
-        <button class="country-btn" onclick="startFight('Nigeria', 3)">Nigeria</button>
-        <button class="country-btn" onclick="startFight('Mexico', 5)">Mexico</button>
-    </div>
+        <div class="countries">
+            <h3>Choose Country to Fight</h3>
+            <button class="country-btn" onclick="startFight('USA', 10)">USA</button>
+            <button class="country-btn" onclick="startFight('Russia', 8)">Russia</button>
+            <button class="country-btn" onclick="startFight('China', 9)">China</button>
+            <button class="country-btn" onclick="startFight('Brazil', 5)">Brazil</button>
+            <button class="country-btn" onclick="startFight('India', 6)">India</button>
+            <button class="country-btn" onclick="startFight('Germany', 7)">Germany</button>
+            <button class="country-btn" onclick="startFight('Canada', 6)">Canada</button>
+            <button class="country-btn" onclick="startFight('Australia', 4)">Australia</button>
+            <button class="country-btn" onclick="startFight('Nigeria', 3)">Nigeria</button>
+            <button class="country-btn" onclick="startFight('Mexico', 5)">Mexico</button>
+        </div>
 
-    <div class="shop">
-        <h3>Shop</h3>
-        <button onclick="buyShape('square')">Buy Square Shape ($10)</button>
-        <button onclick="buyShape('triangle')">Buy Triangle Shape ($15)</button>
+        <div class="shop">
+            <h3>Shop</h3>
+            <button onclick="buyShape('square')">Buy Square Shape ($10)</button>
+            <button onclick="buyShape('triangle')">Buy Triangle Shape ($15)</button>
+        </div>
+        
+        <div class="leaderboard">
+            <h3>Leaderboard</h3>
+            <ul id="leaderboardList">
+                <li>Player 1 - $100</li>
+                <li>Player 2 - $90</li>
+                <li>Player 3 - $80</li>
+                <!-- Add more players dynamically later -->
+            </ul>
+        </div>
     </div>
 
     <script src="game.js"></script>
