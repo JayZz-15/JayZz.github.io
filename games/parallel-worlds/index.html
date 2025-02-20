@@ -6,48 +6,64 @@
     <title>Parallel Worlds</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { background: black; display: flex; justify-content: center; align-items: center; height: 100vh; }
+        body { background: black; display: flex; justify-content: center; align-items: center; height: 100vh; flex-direction: column; }
         canvas { border: 2px solid white; }
+        #gameOverScreen { display: none; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(0,0,0,0.8); color: white; padding: 20px; text-align: center; border-radius: 10px; }
+        button { margin-top: 10px; padding: 10px; background: blue; color: white; border: none; cursor: pointer; border-radius: 5px; }
+        #mobileControls { display: none; position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%); }
+        .control-btn { background: gray; color: white; padding: 10px; margin: 5px; border: none; border-radius: 5px; font-size: 20px; }
     </style>
 </head>
 <body>
     <canvas id="gameCanvas"></canvas>
+    <div id="gameOverScreen">
+        <h1>Game Over</h1>
+        <p>Final Score: <span id="finalScore"></span></p>
+        <button onclick="location.reload()">Main Menu</button>
+    </div>
+    <div id="mobileControls">
+        <button class="control-btn" onclick="mobileMove('up')">▲</button><br>
+        <button class="control-btn" onclick="mobileMove('left')">◄</button>
+        <button class="control-btn" onclick="mobileMove('down')">▼</button>
+        <button class="control-btn" onclick="mobileMove('right')">►</button>
+    </div>
     <script>
         const canvas = document.getElementById("gameCanvas");
         const ctx = canvas.getContext("2d");
+        const gameOverScreen = document.getElementById("gameOverScreen");
+        const finalScoreDisplay = document.getElementById("finalScore");
         canvas.width = 600;
         canvas.height = 600;
 
         const gridSize = canvas.width / 2;
         const playerSize = 20;
-        const speed = 2;
-        const gravity = 0.5;
+        let speed = 2;
         let score = 0;
         let alivePlayers = 4;
+        let enemySpeed = 2;
+        let enemySpawnRate = 2000;
 
         let players = [
-            { x: gridSize / 2 - playerSize / 2, y: gridSize / 2 - playerSize / 2, vx: 0, vy: 0, color: "blue", gravityX: 0, gravityY: gravity, alive: true, bounds: { x: 0, y: 0 } },
-            { x: gridSize / 2 - playerSize / 2, y: gridSize + gridSize / 2 - playerSize / 2, vx: 0, vy: 0, color: "green", gravityX: gravity, gravityY: 0, alive: true, bounds: { x: 0, y: gridSize } },
-            { x: gridSize + gridSize / 2 - playerSize / 2, y: gridSize + gridSize / 2 - playerSize / 2, vx: 0, vy: 0, color: "red", gravityX: 0, gravityY: -gravity, alive: true, bounds: { x: gridSize, y: gridSize } },
-            { x: gridSize + gridSize / 2 - playerSize / 2, y: gridSize / 2 - playerSize / 2, vx: 0, vy: 0, color: "yellow", gravityX: -gravity, gravityY: 0, alive: true, bounds: { x: gridSize, y: 0 } }
+            { x: gridSize / 2, y: gridSize / 2, vx: 0, vy: 0, color: "blue", alive: true, bounds: { x: 0, y: 0 } },
+            { x: gridSize / 2, y: gridSize + gridSize / 2, vx: 0, vy: 0, color: "green", alive: true, bounds: { x: 0, y: gridSize } },
+            { x: gridSize + gridSize / 2, y: gridSize + gridSize / 2, vx: 0, vy: 0, color: "red", alive: true, bounds: { x: gridSize, y: gridSize } },
+            { x: gridSize + gridSize / 2, y: gridSize / 2, vx: 0, vy: 0, color: "yellow", alive: true, bounds: { x: gridSize, y: 0 } }
         ];
 
         let enemies = [];
         let keys = {};
-
         window.addEventListener("keydown", (e) => keys[e.key] = true);
         window.addEventListener("keyup", (e) => keys[e.key] = false);
 
         function spawnEnemy() {
-            let quadrant = Math.floor(Math.random() * 4);
             let enemy = {
-                x: quadrant % 2 === 0 ? Math.random() * gridSize : gridSize + Math.random() * gridSize,
-                y: quadrant < 2 ? Math.random() * gridSize : gridSize + Math.random() * gridSize,
-                size: 20,
-                speed: 2 + Math.random() * 2,
-                directionX: quadrant % 2 === 0 ? 1 : -1,
-                directionY: quadrant < 2 ? 1 : -1,
-                color: "white"
+                x: Math.random() * canvas.width,
+                y: Math.random() * canvas.height,
+                size: 15 + Math.random() * 20,
+                speed: enemySpeed,
+                color: "white",
+                directionX: Math.random() > 0.5 ? 1 : -1,
+                directionY: Math.random() > 0.5 ? 1 : -1
             };
             enemies.push(enemy);
         }
@@ -57,11 +73,8 @@
                 if (!player.alive) return;
                 player.vx = (keys['d'] ? speed : 0) - (keys['a'] ? speed : 0);
                 player.vy = (keys['s'] ? speed : 0) - (keys['w'] ? speed : 0);
-                player.vx += player.gravityX;
-                player.vy += player.gravityY;
                 player.x += player.vx;
                 player.y += player.vy;
-                
                 player.x = Math.max(player.bounds.x, Math.min(player.bounds.x + gridSize - playerSize, player.x));
                 player.y = Math.max(player.bounds.y, Math.min(player.bounds.y + gridSize - playerSize, player.y));
             });
@@ -84,16 +97,11 @@
             });
             
             score += alivePlayers;
+            if (alivePlayers === 0) gameOver();
         }
 
         function draw() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-            ctx.strokeStyle = "white";
-            ctx.strokeRect(0, 0, gridSize, gridSize);
-            ctx.strokeRect(gridSize, 0, gridSize, gridSize);
-            ctx.strokeRect(0, gridSize, gridSize, gridSize);
-            ctx.strokeRect(gridSize, gridSize, gridSize, gridSize);
-            
             players.forEach(player => {
                 if (!player.alive) return;
                 ctx.fillStyle = player.color;
@@ -115,8 +123,14 @@
             draw();
             requestAnimationFrame(gameLoop);
         }
-        
-        setInterval(spawnEnemy, 2000);
+
+        function gameOver() {
+            gameOverScreen.style.display = "block";
+            finalScoreDisplay.innerText = score;
+        }
+
+        setInterval(spawnEnemy, enemySpawnRate);
+        setInterval(() => { enemySpeed += 0.2; enemySpawnRate = Math.max(500, enemySpawnRate - 100); }, 5000);
         gameLoop();
     </script>
 </body>
