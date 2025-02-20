@@ -10,8 +10,6 @@
         canvas { border: 2px solid white; }
         #gameOverScreen { display: none; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(0,0,0,0.8); color: white; padding: 20px; text-align: center; border-radius: 10px; }
         button { margin-top: 10px; padding: 10px; background: blue; color: white; border: none; cursor: pointer; border-radius: 5px; }
-        #mobileControls { display: none; position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%); }
-        .control-btn { background: gray; color: white; padding: 10px; margin: 5px; border: none; border-radius: 5px; font-size: 20px; }
     </style>
 </head>
 <body>
@@ -20,12 +18,6 @@
         <h1>Game Over</h1>
         <p>Final Score: <span id="finalScore"></span></p>
         <button onclick="location.reload()">Main Menu</button>
-    </div>
-    <div id="mobileControls">
-        <button class="control-btn" onclick="mobileMove('up')">▲</button><br>
-        <button class="control-btn" onclick="mobileMove('left')">◄</button>
-        <button class="control-btn" onclick="mobileMove('down')">▼</button>
-        <button class="control-btn" onclick="mobileMove('right')">►</button>
     </div>
     <script>
         const canvas = document.getElementById("gameCanvas");
@@ -44,17 +36,13 @@
         let enemySpawnRate = 2000;
 
         let players = [
-            { x: gridSize / 2, y: gridSize / 2, vx: 0, vy: 0, color: "blue", alive: true, bounds: { x: 0, y: 0 } },
-            { x: gridSize / 2, y: gridSize + gridSize / 2, vx: 0, vy: 0, color: "green", alive: true, bounds: { x: 0, y: gridSize } },
-            { x: gridSize + gridSize / 2, y: gridSize + gridSize / 2, vx: 0, vy: 0, color: "red", alive: true, bounds: { x: gridSize, y: gridSize } },
-            { x: gridSize + gridSize / 2, y: gridSize / 2, vx: 0, vy: 0, color: "yellow", alive: true, bounds: { x: gridSize, y: 0 } }
+            { x: gridSize / 2, y: gridSize / 2, vx: 0, vy: 0, gravityX: 0, gravityY: 1, color: "blue", alive: true, bounds: { x: 0, y: 0 } },
+            { x: gridSize / 2, y: gridSize + gridSize / 2, vx: 0, vy: 0, gravityX: 1, gravityY: 0, color: "green", alive: true, bounds: { x: 0, y: gridSize } },
+            { x: gridSize + gridSize / 2, y: gridSize + gridSize / 2, vx: 0, vy: 0, gravityX: 0, gravityY: -1, color: "red", alive: true, bounds: { x: gridSize, y: gridSize } },
+            { x: gridSize + gridSize / 2, y: gridSize / 2, vx: 0, vy: 0, gravityX: -1, gravityY: 0, color: "yellow", alive: true, bounds: { x: gridSize, y: 0 } }
         ];
 
         let enemies = [];
-        let keys = {};
-        window.addEventListener("keydown", (e) => keys[e.key] = true);
-        window.addEventListener("keyup", (e) => keys[e.key] = false);
-
         function spawnEnemy() {
             let enemy = {
                 x: Math.random() * canvas.width,
@@ -71,8 +59,8 @@
         function update() {
             players.forEach(player => {
                 if (!player.alive) return;
-                player.vx = (keys['d'] ? speed : 0) - (keys['a'] ? speed : 0);
-                player.vy = (keys['s'] ? speed : 0) - (keys['w'] ? speed : 0);
+                player.vx += player.gravityX * 0.1;
+                player.vy += player.gravityY * 0.1;
                 player.x += player.vx;
                 player.y += player.vy;
                 player.x = Math.max(player.bounds.x, Math.min(player.bounds.x + gridSize - playerSize, player.x));
