@@ -18,6 +18,8 @@
     <div id="gameplay" class="menu">
         <h2>Tic-Tac-Toe Battle</h2>
         <div id="board"></div>
+        <p id="status"></p>
+        <button onclick="resetGame()">Restart</button>
         <button onclick="showMenu('main-menu')">Back</button>
     </div>
 
@@ -33,24 +35,21 @@
     <div id="opponent" class="menu">
         <h2>Choose Your Opponent</h2>
         <p>Select a country to fight:</p>
-        <button onclick="startFight('USA', 9)">USA (Strong)</button>
-        <button onclick="startFight('India', 6)">India (Medium)</button>
-        <button onclick="startFight('Nigeria', 3)">Nigeria (Weak)</button>
+        <button onclick="startGame('USA', 9)">USA (Strong)</button>
+        <button onclick="startGame('India', 6)">India (Medium)</button>
+        <button onclick="startGame('Nigeria', 3)">Nigeria (Weak)</button>
         <button onclick="showMenu('main-menu')">Back</button>
     </div>
 
     <script src="game.js"></script>
     <script src="ai.js"></script>
     <script src="shop.js"></script>
-    <script src="countries.js"></script>
 
     <script>
         function showMenu(menu) {
             document.querySelectorAll(".menu").forEach(m => m.style.display = "none");
             document.getElementById(menu).style.display = "block";
         }
-
-        // Show main menu on page load
         showMenu("main-menu");
     </script>
 </body>
