@@ -23,16 +23,23 @@
       margin: 5px;
       padding: 10px 15px;
       cursor: pointer;
+      font-size: 16px;
+    }
+    .controls {
+      margin: 20px;
+    }
+    .door-button {
+      width: 150px;
     }
   </style>
 </head>
 <body>
   <h1>Simple FNAF Office</h1>
-  <canvas id="officeCanvas" width="600" height="400"></canvas>
-  <div>
-    <button onclick="closeLeftDoor()">Close Left Door</button>
-    <button onclick="closeFrontDoor()">Close Front Door</button>
-    <button onclick="closeRightDoor()">Close Right Door</button>
+  <canvas id="officeCanvas" width="800" height="500"></canvas>
+  <div class="controls">
+    <button class="door-button" onclick="closeLeftDoor()">Close Left Door</button>
+    <button class="door-button" onclick="closeFrontDoor()">Close Front Door</button>
+    <button class="door-button" onclick="closeRightDoor()">Close Right Door</button>
   </div>
   <p>Time Survived: <span id="timer">0</span> seconds</p>
 
@@ -84,39 +91,48 @@
       ctx.fillStyle = "#444";
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-      // Draw left door area (left 150px).
+      // Draw the desk in the middle of the office.
+      ctx.fillStyle = "#555";
+      ctx.fillRect(300, 250, 200, 50);  // Desk area
+
+      // Draw left door area (left 200px).
       ctx.fillStyle = leftDoorClosed ? "#000" : "#666";
-      ctx.fillRect(0, 0, 150, canvas.height);
-      ctx.fillStyle = "#fff";
-      ctx.font = "16px Arial";
-      ctx.fillText("Left Door", 40, 20);
+      ctx.fillRect(0, 0, 200, canvas.height);
+      if (!leftDoorClosed) {
+        ctx.fillStyle = "#fff";
+        ctx.fillText("Left Door", 70, 30);
+      }
 
-      // Draw right door area (right 150px).
+      // Draw right door area (right 200px).
       ctx.fillStyle = rightDoorClosed ? "#000" : "#666";
-      ctx.fillRect(canvas.width - 150, 0, 150, canvas.height);
-      ctx.fillStyle = "#fff";
-      ctx.fillText("Right Door", canvas.width - 130, 20);
+      ctx.fillRect(canvas.width - 200, 0, 200, canvas.height);
+      if (!rightDoorClosed) {
+        ctx.fillStyle = "#fff";
+        ctx.fillText("Right Door", canvas.width - 130, 30);
+      }
 
-      // Draw front door area (center bottom, 150px wide x 100px tall).
+      // Draw front door area (center bottom, 200px wide x 100px tall).
       ctx.fillStyle = frontDoorClosed ? "#000" : "#666";
-      ctx.fillRect(225, canvas.height - 100, 150, 100);
-      ctx.fillStyle = "#fff";
-      ctx.fillText("Front Door", 245, canvas.height - 80);
+      ctx.fillRect(300, canvas.height - 100, 200, 100);
+      if (!frontDoorClosed) {
+        ctx.fillStyle = "#fff";
+        ctx.fillText("Front Door", 370, canvas.height - 60);
+      }
 
       // If an animatronic event is active, draw a red cube in the corresponding area.
       if (animatronicEvent && animatronicDirection) {
         ctx.fillStyle = "#ff0000"; // red cube as placeholder
         const cubeSize = 50;
         let x, y;
-        if (animatronicDirection === "left") {
-          x = (150 - cubeSize) / 2;
+        if (animatronicDirection === "left" && !leftDoorClosed) {
+          x = (200 - cubeSize) / 2;
           y = (canvas.height - cubeSize) / 2;
-        } else if (animatronicDirection === "right") {
-          x = canvas.width - 150 + (150 - cubeSize) / 2;
+        } else if (animatronicDirection === "right" && !rightDoorClosed) {
+          x = canvas.width - 200 + (200 - cubeSize) / 2;
           y = (canvas.height - cubeSize) / 2;
-        } else if (animatronicDirection === "front") {
-          x = 225 + (150 - cubeSize) / 2;
-          y = canvas.height - 100 + ((100 - cubeSize) / 2);
+        } else if (animatronicDirection === "front" && !frontDoorClosed) {
+          x = 300 + (200 - cubeSize) / 2;
+          y = canvas.height - 100 + (100 - cubeSize) / 2;
         }
         ctx.fillRect(x, y, cubeSize, cubeSize);
       }
