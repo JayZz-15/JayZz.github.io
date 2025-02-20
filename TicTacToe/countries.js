@@ -1,7 +1,10 @@
-function startFight(country, strength) {
-    currentCountry = country;
-    countryStrength = strength;
-    alert(`You are now fighting against ${country}!`);
-    showMenu("gameplay");
-    startGame();
+const countries = {
+    USA: 9,
+    India: 6,
+    Nigeria: 3
+};
+
+function startFight(country, difficulty) {
+    aiDifficulty = difficulty;
+    startGame(country, difficulty);
 }
