@@ -1,24 +1,34 @@
 // Global variables
 let gameBoard = ['', '', '', '', '', '', '', '', '']; // Empty board
 let currentPlayer = 'X'; // Player's turn starts first
-let money = 0; // Player's money
+let money = 100; // Player starts with some money
 let playerShape = 'X'; // Default player shape
 let currentCountry = ''; // To store selected country
 let countryStrength = 0; // The strength of the country
+let currentBet = 0; // Stores the player's bet
 
 // Country strength levels
 const countryStrengths = {
-    'USA': 10,
-    'Russia': 8,
-    'China': 9,
-    'Brazil': 5,
-    'India': 6,
-    'Germany': 7,
-    'Canada': 6,
-    'Australia': 4,
-    'Nigeria': 3,
-    'Mexico': 5
+    'USA': 10, 'Russia': 8, 'China': 9, 'Brazil': 5,
+    'India': 6, 'Germany': 7, 'Canada': 6, 'Australia': 4,
+    'Nigeria': 3, 'Mexico': 5
 };
+
+// Function to place a bet
+function placeBet() {
+    let betInput = document.getElementById('betAmount').value;
+    let bet = parseInt(betInput);
+
+    if (bet > 0 && bet <= money) {
+        currentBet = bet;
+        money -= bet; // Deduct bet from money
+        updateMoney();
+        document.getElementById('betInfo').textContent = `Current Bet: $${currentBet}`;
+        alert(`You placed a bet of $${currentBet}!`);
+    } else {
+        alert("Invalid bet amount!");
+    }
+}
 
 // Minimax algorithm for AI with dynamic strength
 const minimax = (board, depth, isMaximizing) => {
@@ -99,35 +109,51 @@ function checkWinner(board) {
             return board[a]; // Return the winner ('X' or 'O')
         }
     }
+    if (!board.includes('')) return 'Tie'; // If board is full and no winner
     return null;
 }
 
 // Handle the player's move
 function handlePlayerMove(index) {
     if (gameBoard[index] === '' && currentPlayer === 'X') {
-        gameBoard[index] = playerShape; // Use the current shape
+        gameBoard[index] = playerShape;
         renderBoard();
-        if (checkWinner(gameBoard)) {
-            money += 20; // Reward money for winning
-            setTimeout(() => alert("Player wins! You earned $20"), 100);
-            updateMoney();
-            return;
+        const winner = checkWinner(gameBoard);
+        if (winner) endGame(winner);
+        else {
+            currentPlayer = 'O';
+            aiMove();
         }
-        currentPlayer = 'O';
-        aiMove();
     }
 }
 
-// AI's move (use weaker AI for weaker countries)
+// AI's move
 function aiMove() {
     const move = (countryStrength < 5) ? weakCountryMistakes(gameBoard) : bestMove(gameBoard);
     gameBoard[move] = 'O';
     renderBoard();
-    if (checkWinner(gameBoard)) {
-        setTimeout(() => alert("AI wins!"), 100);
-    } else {
+    const winner = checkWinner(gameBoard);
+    if (winner) endGame(winner);
+    else {
         currentPlayer = 'X';
     }
+}
+
+// End game function
+function endGame(winner) {
+    if (winner === 'X') {
+        let winnings = currentBet * 2;
+        money += winnings;
+        alert(`You won! You earned $${winnings}`);
+    } else if (winner === 'O') {
+        alert("AI won! You lost your bet.");
+    } else {
+        alert("It's a tie! You got your bet back.");
+        money += currentBet; // Refund bet
+    }
+    updateMoney();
+    currentBet = 0;
+    restartGame();
 }
 
 // Render the board
@@ -136,7 +162,6 @@ function renderBoard() {
     gameBoard.forEach((value, index) => {
         cells[index].textContent = value;
     });
-
     document.getElementById('currentPlayer').textContent = currentPlayer === 'X' ? 'Player' : 'AI';
 }
 
@@ -150,24 +175,4 @@ function restartGame() {
 // Update money on the UI
 function updateMoney() {
     document.getElementById('money').textContent = money;
-}
-
-// Buy a new shape
-function buyShape(shape) {
-    if (money >= 10) {
-        playerShape = shape;
-        money -= 10;
-        updateMoney();
-        alert(`You now play as ${shape}!`);
-    } else {
-        alert("Not enough money!");
-    }
-}
-
-// Start a fight with a selected country
-function startFight(country, strength) {
-    currentCountry = country;
-    countryStrength = strength;
-    alert(`You are now fighting against ${country} with strength: ${strength}`);
-    restartGame(); // Restart the game with the new country
 }
