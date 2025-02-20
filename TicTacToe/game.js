@@ -1,90 +1,116 @@
-const cells = document.querySelectorAll('.cell');
-const statusDiv = document.getElementById('status');
-const restartBtn = document.getElementById('restartBtn');
-let currentPlayer = 'X'; // 'X' is the player, 'O' is AI
-let gameBoard = ['', '', '', '', '', '', '', '', ''];
-let gameOver = false;
+// Minimax algorithm for AI
+const minimax = (board, depth, isMaximizing) => {
+    const winner = checkWinner(board);
+    if (winner === 'X') return -10 + depth; // Player 'X' wins
+    if (winner === 'O') return 10 - depth; // AI 'O' wins
+    if (!board.includes('')) return 0; // Tie
 
-function renderBoard() {
-    gameBoard.forEach((value, index) => {
-        cells[index].textContent = value;
-        cells[index].style.pointerEvents = gameOver ? 'none' : 'auto';
-    });
-}
+    if (isMaximizing) {
+        let best = -Infinity;
+        for (let i = 0; i < board.length; i++) {
+            if (board[i] === '') {
+                board[i] = 'O'; // AI's turn
+                const score = minimax(board, depth + 1, false);
+                board[i] = ''; // Undo move
+                best = Math.max(best, score);
+            }
+        }
+        return best;
+    } else {
+        let best = Infinity;
+        for (let i = 0; i < board.length; i++) {
+            if (board[i] === '') {
+                board[i] = 'X'; // Player's turn
+                const score = minimax(board, depth + 1, true);
+                board[i] = ''; // Undo move
+                best = Math.min(best, score);
+            }
+        }
+        return best;
+    }
+};
 
-function checkWinner() {
-    const winningCombos = [
-        [0, 1, 2],
-        [3, 4, 5],
-        [6, 7, 8],
-        [0, 3, 6],
-        [1, 4, 7],
-        [2, 5, 8],
-        [0, 4, 8],
-        [2, 4, 6]
+// Function to get the best move for the AI
+const bestMove = (board) => {
+    let bestValue = -Infinity;
+    let move = -1;
+
+    for (let i = 0; i < board.length; i++) {
+        if (board[i] === '') {
+            board[i] = 'O'; // AI's move
+            const moveValue = minimax(board, 0, false);
+            board[i] = ''; // Undo move
+
+            if (moveValue > bestValue) {
+                bestValue = moveValue;
+                move = i;
+            }
+        }
+    }
+    return move;
+};
+
+// Board initialization
+let gameBoard = ['', '', '', '', '', '', '', '', '']; // Empty board
+let currentPlayer = 'X'; // Player's turn starts first
+
+// Check for a winner
+function checkWinner(board) {
+    const winPatterns = [
+        [0, 1, 2], [3, 4, 5], [6, 7, 8], // Rows
+        [0, 3, 6], [1, 4, 7], [2, 5, 8], // Columns
+        [0, 4, 8], [2, 4, 6], // Diagonals
     ];
 
-    for (const combo of winningCombos) {
-        const [a, b, c] = combo;
-        if (gameBoard[a] && gameBoard[a] === gameBoard[b] && gameBoard[a] === gameBoard[c]) {
-            gameOver = true;
-            statusDiv.textContent = `${currentPlayer} Wins!`;
-            return true;
+    for (let pattern of winPatterns) {
+        const [a, b, c] = pattern;
+        if (board[a] && board[a] === board[b] && board[a] === board[c]) {
+            return board[a]; // Return the winner ('X' or 'O')
         }
     }
 
-    if (!gameBoard.includes('')) {
-        gameOver = true;
-        statusDiv.textContent = "It's a Tie!";
-        return true;
-    }
-
-    return false;
+    return null; // No winner yet
 }
 
-function handleClick(event) {
-    if (gameOver) return;
-    const cell = event.target;
-    const index = cell.getAttribute('data-index');
-
-    if (gameBoard[index] === '') {
-        gameBoard[index] = currentPlayer;
+// Function to handle the player's move
+function handlePlayerMove(index) {
+    if (gameBoard[index] === '' && currentPlayer === 'X') {
+        gameBoard[index] = 'X'; // Player's move
         renderBoard();
-        if (!checkWinner()) {
-            currentPlayer = 'O'; // AI's turn
-            statusDiv.textContent = `AI's turn`;
-            aiMove();
+        if (checkWinner(gameBoard)) {
+            setTimeout(() => alert("Player wins!"), 100);
+            return;
         }
+        currentPlayer = 'O'; // Switch to AI's turn
+        aiMove(); // Let the AI make a move
     }
 }
 
+// Function to handle the AI's move
 function aiMove() {
-    // Simple AI that picks a random empty spot
-    let availableMoves = [];
+    const move = bestMove(gameBoard); // Get the best move for the AI
+    gameBoard[move] = 'O'; // AI makes the move
+    renderBoard();
+    if (checkWinner(gameBoard)) {
+        setTimeout(() => alert("AI wins!"), 100);
+    } else {
+        currentPlayer = 'X'; // Switch back to player's turn
+    }
+}
+
+// Render the board to the UI
+function renderBoard() {
+    const cells = document.querySelectorAll('.cell');
     gameBoard.forEach((value, index) => {
-        if (value === '') {
-            availableMoves.push(index);
-        }
+        cells[index].textContent = value;
     });
 
-    const randomMove = availableMoves[Math.floor(Math.random() * availableMoves.length)];
-    gameBoard[randomMove] = 'O';
-    renderBoard();
-    if (!checkWinner()) {
-        currentPlayer = 'X'; // Player's turn
-        statusDiv.textContent = `Player's turn`;
-    }
+    document.getElementById('currentPlayer').textContent = currentPlayer === 'X' ? 'Player' : 'AI';
 }
 
+// Restart the game
 function restartGame() {
-    gameBoard = ['', '', '', '', '', '', '', '', ''];
-    currentPlayer = 'X'; // Player starts
-    gameOver = false;
-    statusDiv.textContent = `Player's turn`;
+    gameBoard = ['', '', '', '', '', '', '', '', '']; // Reset the board
+    currentPlayer = 'X'; // Start with Player
     renderBoard();
 }
-
-cells.forEach(cell => cell.addEventListener('click', handleClick));
-restartBtn.addEventListener('click', restartGame);
-
-renderBoard();
