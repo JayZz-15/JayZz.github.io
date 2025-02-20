@@ -26,6 +26,10 @@ window.onload = () => {
     if (localStorage.getItem('currentCountry')) {
         currentCountry = localStorage.getItem('currentCountry');
     }
+
+    // Attach event listeners for buttons
+    document.getElementById('saveNameButton').addEventListener('click', saveName);
+    document.getElementById('restartButton').addEventListener('click', restartGame);
 };
 
 // Save the player's name to localStorage
@@ -164,25 +168,7 @@ function restartGame() {
     gameBoard = ['', '', '', '', '', '', '', '', ''];
     currentPlayer = 'X';
     renderBoard();
-    localStorage.setItem('gameBoard', JSON.stringify(gameBoard)); // Save the board state
-}
-
-// Update money on the UI
-function updateMoney() {
-    document.getElementById('money').textContent = money;
-}
-
-// Buy a new shape
-function buyShape(shape) {
-    if (money >= 10) {
-        playerShape = shape;
-        money -= 10;
-        updateMoney();
-        alert(`You now play as ${shape}!`);
-        localStorage.setItem('playerShape', shape); // Save the shape
-    } else {
-        alert("Not enough money!");
-    }
+    localStorage.setItem('gameBoard', JSON.stringify(gameBoard));
 }
 
 // Start a fight with a country
@@ -191,4 +177,24 @@ function startFight(country, strength) {
     countryStrength = strength;
     localStorage.setItem('currentCountry', country); // Save the country choice
     alert(`You are fighting ${country}!`);
+}
+
+// Update the money display
+function updateMoney() {
+    document.getElementById('money').textContent = money;
+}
+
+// Function to buy a shape
+function buyShape(shape) {
+    const cost = shape === 'square' ? 10 : 15;
+    if (money >= cost) {
+        money -= cost;
+        localStorage.setItem('money', money);
+        localStorage.setItem('playerShape', shape);
+        playerShape = shape;
+        updateMoney();
+        alert(`You bought the ${shape} shape!`);
+    } else {
+        alert('Not enough money!');
+    }
 }
