@@ -5,7 +5,35 @@ let money = 0; // Player's money
 let playerShape = 'X'; // Default player shape
 let currentCountry = ''; // To store selected country
 let countryStrength = 0; // The strength of the country
-let playerName = ''; // Player's country name
+let playerName = ''; // Player's name
+
+// Load saved data from localStorage
+window.onload = () => {
+    if (localStorage.getItem('playerName')) {
+        playerName = localStorage.getItem('playerName');
+        document.getElementById('playerDisplay').textContent = `Welcome, ${playerName}!`;
+    }
+
+    if (localStorage.getItem('money')) {
+        money = parseInt(localStorage.getItem('money'));
+        document.getElementById('money').textContent = money;
+    }
+
+    if (localStorage.getItem('playerShape')) {
+        playerShape = localStorage.getItem('playerShape');
+    }
+
+    if (localStorage.getItem('currentCountry')) {
+        currentCountry = localStorage.getItem('currentCountry');
+    }
+};
+
+// Save the player's name to localStorage
+function saveName() {
+    playerName = document.getElementById('playerName').value;
+    localStorage.setItem('playerName', playerName);
+    document.getElementById('playerDisplay').textContent = `Welcome, ${playerName}!`;
+}
 
 // Country strength levels
 const countryStrengths = {
@@ -74,18 +102,6 @@ const bestMove = (board) => {
     return move;
 };
 
-// Handle weaker AI's mistakes for low-strength countries
-const weakCountryMistakes = (board) => {
-    const mistakeChance = Math.random();
-    if (mistakeChance < 0.5) {
-        // 50% chance of making a mistake
-        const availableMoves = board.map((cell, index) => (cell === '') ? index : null).filter(val => val !== null);
-        const randomMove = availableMoves[Math.floor(Math.random() * availableMoves.length)];
-        return randomMove;
-    }
-    return bestMove(board); // Otherwise, use the best move
-};
-
 // Check for a winner
 function checkWinner(board) {
     const winPatterns = [
@@ -111,6 +127,7 @@ function handlePlayerMove(index) {
         if (checkWinner(gameBoard)) {
             money += 20; // Reward money for winning
             setTimeout(() => alert("Player wins! You earned $20"), 100);
+            localStorage.setItem('money', money); // Save money
             updateMoney();
             return;
         }
@@ -146,6 +163,7 @@ function restartGame() {
     gameBoard = ['', '', '', '', '', '', '', '', ''];
     currentPlayer = 'X';
     renderBoard();
+    localStorage.setItem('gameBoard', JSON.stringify(gameBoard)); // Save the board state
 }
 
 // Update money on the UI
@@ -160,6 +178,7 @@ function buyShape(shape) {
         money -= 10;
         updateMoney();
         alert(`You now play as ${shape}!`);
+        localStorage.setItem('playerShape', shape); // Save the shape
     } else {
         alert("Not enough money!");
     }
@@ -170,26 +189,6 @@ function startFight(country, strength) {
     currentCountry = country;
     countryStrength = strength;
     alert(`You are now fighting against ${country} with strength: ${strength}`);
+    localStorage.setItem('currentCountry', country); // Save the current country
     restartGame(); // Restart the game with the new country
-}
-
-// Display leaderboard
-function updateLeaderboard() {
-    const leaderboard = document.getElementById('leaderboardList');
-    const playerEntry = document.createElement('li');
-    playerEntry.textContent = `${playerName}: $${money}`;
-    leaderboard.appendChild(playerEntry);
-}
-
-// Set player name
-function setPlayerName(name) {
-    playerName = name;
-    alert(`Your country is now: ${name}`);
-}
-
-// Save money to leaderboard
-function saveToLeaderboard() {
-    // This function will save the player's money globally.
-    // (In a real game, you'd save this to a server or local storage)
-    updateLeaderboard();
 }
