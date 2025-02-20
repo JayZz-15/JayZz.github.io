@@ -1,131 +1,183 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tower Builder</title>
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { text-align: center; font-family: Arial, sans-serif; background: #222; color: white; }
-        canvas { background: rgba(255, 255, 255, 0.1); display: block; margin: 20px auto; border: 2px solid white; }
-        .game-over { display: none; }
-        .btn { padding: 10px 20px; background: #3498db; color: white; border: none; cursor: pointer; border-radius: 5px; }
-        /* Mobile Support */
-        @media (max-width: 600px) {
-            canvas {
-                width: 100%;
-                height: auto;
-            }
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tower Builder</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { text-align: center; font-family: Arial, sans-serif; background: #222; color: white; }
+    canvas { background: rgba(255, 255, 255, 0.1); display: block; margin: 20px auto; border: 2px solid white; }
+    .game-over { display: none; }
+    .btn { padding: 10px 20px; background: #3498db; color: white; border: none; cursor: pointer; border-radius: 5px; }
+    /* Mobile support */
+    @media (max-width: 600px) {
+      canvas { width: 100%; height: auto; }
+    }
+  </style>
 </head>
 <body>
-    <h1>Tower Builder</h1>
-    <p>Press SPACE or tap to drop blocks!</p>
-    <canvas id="gameCanvas" width="400" height="600"></canvas>
-    <div class="game-over" id="gameOverScreen">
-        <h2>Game Over!</h2>
-        <p id="finalScore"></p>
-        <button class="btn" onclick="restartGame()">Retry</button>
-        <button class="btn" onclick="location.href='index.html'">🏠 Back to Menu</button>
-    </div>
-    <script>
-        const canvas = document.getElementById("gameCanvas");
-        const ctx = canvas.getContext("2d");
+  <h1>Tower Builder</h1>
+  <p>Press SPACE or tap to drop the block!</p>
+  <canvas id="gameCanvas" width="400" height="600"></canvas>
+  <div class="game-over" id="gameOverScreen">
+    <h2>Game Over!</h2>
+    <p id="finalScore"></p>
+    <button class="btn" onclick="restartGame()">Retry</button>
+    <button class="btn" onclick="location.href='index.html'">🏠 Back to Menu</button>
+  </div>
+  <script>
+    const canvas = document.getElementById("gameCanvas");
+    const ctx = canvas.getContext("2d");
 
-        let blocks = [], baseHeight = 550, movingBlock;
-        let gameOver = false, score = 0, speed = 2;
+    // Adjust canvas width for mobile devices.
+    canvas.width = window.innerWidth > 600 ? 400 : window.innerWidth - 40;
+    canvas.height = 600;
 
-        // Adjust the canvas size dynamically based on screen size
-        canvas.width = window.innerWidth > 600 ? 400 : window.innerWidth - 40;
-        canvas.height = 600;
+    let blocks = [];
+    let currentBlock;
+    const blockHeight = 20;
+    // Base block will be placed near the bottom.
+    const baseY = canvas.height - blockHeight - 50;
+    let gameOver = false;
+    let score = 0;
+    let horizontalSpeed = 3;
+    const dropSpeed = 8; // speed of the vertical drop
 
-        function initGame() {
-            blocks = [{ x: canvas.width / 2 - 50, y: baseHeight, width: 100, height: 20 }];
-            spawnMovingBlock();
-            score = 0;
-            gameOver = false;
-            document.getElementById("gameOverScreen").style.display = "none";
-            requestAnimationFrame(gameLoop);
+    // currentBlock will have a state: "moving" (horizontally) or "dropping" (falling vertically)
+    // and a targetY where it should land.
+    function initGame() {
+      blocks = [];
+      // Create the base block at the bottom (centered).
+      const baseBlock = {
+        x: canvas.width / 2 - 50,
+        y: baseY,
+        width: 100,
+        height: blockHeight
+      };
+      blocks.push(baseBlock);
+      score = 0;
+      gameOver = false;
+      document.getElementById("gameOverScreen").style.display = "none";
+      spawnNewBlock();
+      requestAnimationFrame(gameLoop);
+    }
+
+    // Spawn a new moving block.
+    function spawnNewBlock() {
+      const lastBlock = blocks[blocks.length - 1];
+      currentBlock = {
+        x: 0,
+        y: 50, // start near the top
+        width: lastBlock.width, // new block starts with the same width as the last block
+        height: blockHeight,
+        direction: 1,
+        state: "moving",
+        targetY: lastBlock.y - blockHeight
+      };
+    }
+
+    // Called when player taps/clicks or presses SPACE.
+    function dropBlock() {
+      if (gameOver) return;
+      if (currentBlock.state === "moving") {
+        currentBlock.state = "dropping";
+      }
+    }
+
+    function update() {
+      if (gameOver) return;
+      if (currentBlock.state === "moving") {
+        // Move horizontally.
+        currentBlock.x += horizontalSpeed * currentBlock.direction;
+        // Bounce off the canvas edges.
+        if (currentBlock.x + currentBlock.width >= canvas.width) {
+          currentBlock.x = canvas.width - currentBlock.width;
+          currentBlock.direction = -1;
+        } else if (currentBlock.x <= 0) {
+          currentBlock.x = 0;
+          currentBlock.direction = 1;
         }
-
-        function spawnMovingBlock() {
-            movingBlock = { 
-                x: canvas.width / 2 - 50, 
-                y: 50, 
-                width: 100, 
-                height: 20, 
-                direction: 1,
-                velocity: 0, // To simulate falling speed
-                fallSpeed: 4 // Falling speed
-            };
+      } else if (currentBlock.state === "dropping") {
+        // Animate vertical drop.
+        currentBlock.y += dropSpeed;
+        if (currentBlock.y >= currentBlock.targetY) {
+          currentBlock.y = currentBlock.targetY;
+          settleBlock();
         }
+      }
+    }
 
-        function dropBlock() {
-            if (gameOver) return;
-            let lastBlock = blocks[blocks.length - 1];
-            let newBlock = { 
-                ...movingBlock, 
-                y: lastBlock.y - movingBlock.height 
-            };
+    // Once the block lands, check alignment and trim any overhang.
+    function settleBlock() {
+      const lastBlock = blocks[blocks.length - 1];
+      // Determine overlapping region.
+      const leftEdge = Math.max(lastBlock.x, currentBlock.x);
+      const rightEdge = Math.min(lastBlock.x + lastBlock.width, currentBlock.x + currentBlock.width);
+      const overlap = rightEdge - leftEdge;
 
-            // Check if the block aligns with the last block
-            let overlap = Math.abs(newBlock.x - lastBlock.x) <= lastBlock.width / 2;
-            if (overlap) {
-                blocks.push(newBlock);
-                score++;
+      if (overlap <= 0) {
+        // No overlap means the block missed; game over.
+        endGame();
+      } else {
+        // Adjust current block to the overlapping part.
+        currentBlock.x = leftEdge;
+        currentBlock.width = overlap;
+        blocks.push(currentBlock);
+        score++;
+        // Increase horizontal speed slightly as the game progresses.
+        horizontalSpeed += 0.1;
+        spawnNewBlock();
+      }
+    }
 
-                // If the new block hangs off, trim the excess part
-                let excess = Math.abs(newBlock.x - lastBlock.x) - lastBlock.width / 2;
-                if (excess > 0) {
-                    blocks[blocks.length - 1].width -= excess;
-                }
+    function draw() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      // Draw all stacked blocks.
+      ctx.fillStyle = "#ffcc00";
+      blocks.forEach(block => {
+        ctx.fillRect(block.x, block.y, block.width, block.height);
+      });
+      // Draw the current moving block.
+      if (!gameOver && currentBlock) {
+        ctx.fillStyle = "#ff5733";
+        ctx.fillRect(currentBlock.x, currentBlock.y, currentBlock.width, currentBlock.height);
+      }
+      // Display the score.
+      ctx.fillStyle = "white";
+      ctx.font = "20px Arial";
+      ctx.fillText("Score: " + score, 10, 30);
+    }
 
-                spawnMovingBlock();
-            } else {
-                endGame();
-            }
-        }
+    function gameLoop() {
+      if (gameOver) return;
+      update();
+      draw();
+      requestAnimationFrame(gameLoop);
+    }
 
-        function moveBlock() {
-            movingBlock.velocity += 0.5; // Increase fall speed gradually
-            movingBlock.y += movingBlock.velocity;
-        }
+    function endGame() {
+      gameOver = true;
+      document.getElementById("finalScore").innerText = "Score: " + score;
+      document.getElementById("gameOverScreen").style.display = "block";
+    }
 
-        function drawBlocks() {
-            ctx.fillStyle = "#ffcc00";
-            blocks.forEach(block => ctx.fillRect(block.x, block.y, block.width, block.height));
-            ctx.fillStyle = "#ff5733";
-            ctx.fillRect(movingBlock.x, movingBlock.y, movingBlock.width, movingBlock.height);
-        }
+    function restartGame() {
+      initGame();
+    }
 
-        function gameLoop() {
-            if (gameOver) return;
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            moveBlock();
-            drawBlocks();
-            requestAnimationFrame(gameLoop);
-        }
+    // Event listeners for desktop and mobile.
+    document.addEventListener("keydown", (e) => {
+      if (e.code === "Space") dropBlock();
+    });
+    canvas.addEventListener("click", dropBlock);
+    canvas.addEventListener("touchstart", (e) => {
+      e.preventDefault();
+      dropBlock();
+    });
 
-        function endGame() {
-            gameOver = true;
-            document.getElementById("finalScore").innerText = "Score: " + score;
-            document.getElementById("gameOverScreen").style.display = "block";
-        }
-
-        function restartGame() {
-            initGame();
-        }
-
-        // Add event listener for mobile support (touch events)
-        document.addEventListener("keydown", (e) => { if (e.code === "Space") dropBlock(); });
-        canvas.addEventListener("click", dropBlock);
-        canvas.addEventListener("touchstart", (e) => {
-            e.preventDefault(); // Prevent page scroll
-            dropBlock();
-        });
-
-        initGame();
-    </script>
+    // Start the game.
+    initGame();
+  </script>
 </body>
 </html>
