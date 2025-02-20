@@ -11,7 +11,13 @@ const countryStrengths = {
     'USA': 10,
     'Russia': 8,
     'China': 9,
-    'Brazil': 5
+    'Brazil': 5,
+    'India': 6,
+    'Germany': 7,
+    'Canada': 6,
+    'Australia': 4,
+    'Nigeria': 3,
+    'Mexico': 5
 };
 
 // Minimax algorithm for AI with dynamic strength
@@ -67,6 +73,18 @@ const bestMove = (board) => {
     return move;
 };
 
+// Handle weaker AI's mistakes for low-strength countries
+const weakCountryMistakes = (board) => {
+    const mistakeChance = Math.random();
+    if (mistakeChance < 0.5) {
+        // 50% chance of making a mistake
+        const availableMoves = board.map((cell, index) => (cell === '') ? index : null).filter(val => val !== null);
+        const randomMove = availableMoves[Math.floor(Math.random() * availableMoves.length)];
+        return randomMove;
+    }
+    return bestMove(board); // Otherwise, use the best move
+};
+
 // Check for a winner
 function checkWinner(board) {
     const winPatterns = [
@@ -100,9 +118,9 @@ function handlePlayerMove(index) {
     }
 }
 
-// AI's move
+// AI's move (use weaker AI for weaker countries)
 function aiMove() {
-    const move = bestMove(gameBoard);
+    const move = (countryStrength < 5) ? weakCountryMistakes(gameBoard) : bestMove(gameBoard);
     gameBoard[move] = 'O';
     renderBoard();
     if (checkWinner(gameBoard)) {
@@ -134,7 +152,7 @@ function updateMoney() {
     document.getElementById('money').textContent = money;
 }
 
-// Buy a new shape for the player
+// Buy a new shape
 function buyShape(shape) {
     if (money >= 10) {
         playerShape = shape;
