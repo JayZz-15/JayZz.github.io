@@ -3,58 +3,72 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Complicated Tic Tac Toe</title>
+    <title>Tic Tac Toe - Complex Version</title>
     <style>
-        body { font-family: Arial, sans-serif; background: #333; color: white; text-align: center; padding: 20px; }
-        h1 { margin: 20px 0; }
-        .board { display: grid; grid-template-columns: repeat(3, 100px); grid-template-rows: repeat(3, 100px); gap: 5px; margin: 20px auto; }
-        .cell { width: 100px; height: 100px; background: #555; display: flex; justify-content: center; align-items: center; font-size: 36px; cursor: pointer; }
-        .cell.disabled { background: #888; cursor: not-allowed; }
-        .info { margin: 20px 0; }
-        #playerCountry { font-weight: bold; }
-        #playerMoney { color: gold; }
-        #leaderboard { margin-top: 40px; }
-        .button { padding: 10px 20px; background: #555; color: white; border: none; cursor: pointer; border-radius: 5px; margin: 5px; }
-        .button:hover { background: #444; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: Arial, sans-serif; }
+        body { background: black; color: white; text-align: center; display: flex; justify-content: space-between; }
+        .board { display: grid; grid-template-columns: repeat(3, 100px); grid-gap: 10px; justify-content: center; margin-top: 50px; }
+        .cell { width: 100px; height: 100px; background: #333; display: flex; align-items: center; justify-content: center; font-size: 2em; cursor: pointer; }
+        .cell:hover { background: #555; }
+        .info { margin-top: 20px; font-size: 1.2em; }
+        .shop { margin-top: 20px; }
+        .shop button { margin: 10px; padding: 10px; background: #444; color: white; border: none; cursor: pointer; }
+        .shop button:hover { background: #666; }
+        .countries { display: flex; flex-direction: column; margin: 20px; }
+        .country-btn { padding: 10px; margin: 10px; background: #444; color: white; border: none; cursor: pointer; }
+        .country-btn:hover { background: #666; }
+        .leaderboard { margin-top: 20px; }
+        .leaderboard ul { list-style-type: none; padding: 0; }
+        .leaderboard li { margin: 10px 0; }
     </style>
 </head>
 <body>
-
-    <h1>Complicated Tic Tac Toe</h1>
-
-    <div id="countrySection">
-        <label for="countryName">Enter your country name:</label>
-        <input type="text" id="countryName" placeholder="Country Name">
-        <button class="button" onclick="setCountry()">Set Country</button>
+    <div>
+        <h1>Tic Tac Toe - Complex Version</h1>
+        <div class="board">
+            <div class="cell" onclick="handlePlayerMove(0)"></div>
+            <div class="cell" onclick="handlePlayerMove(1)"></div>
+            <div class="cell" onclick="handlePlayerMove(2)"></div>
+            <div class="cell" onclick="handlePlayerMove(3)"></div>
+            <div class="cell" onclick="handlePlayerMove(4)"></div>
+            <div class="cell" onclick="handlePlayerMove(5)"></div>
+            <div class="cell" onclick="handlePlayerMove(6)"></div>
+            <div class="cell" onclick="handlePlayerMove(7)"></div>
+            <div class="cell" onclick="handlePlayerMove(8)"></div>
+        </div>
+        <div class="info">
+            <p>Current Player: <span id="currentPlayer">Player</span></p>
+            <p>Money: $<span id="money">0</span></p>
+            <button onclick="restartGame()">Restart Game</button>
+        </div>
     </div>
 
-    <div id="gameSection" style="display: none;">
-        <div class="info">
-            <h3>Your Country: <span id="playerCountry"></span></h3>
-            <h4>Your Money: $<span id="playerMoney"></span></h4>
-            <button class="button" onclick="startGame()">Start Game</button>
-        </div>
+    <div class="countries">
+        <h3>Choose Country to Fight</h3>
+        <button class="country-btn" onclick="startFight('USA', 10)">USA</button>
+        <button class="country-btn" onclick="startFight('Russia', 8)">Russia</button>
+        <button class="country-btn" onclick="startFight('China', 9)">China</button>
+        <button class="country-btn" onclick="startFight('Brazil', 5)">Brazil</button>
+        <button class="country-btn" onclick="startFight('India', 6)">India</button>
+        <button class="country-btn" onclick="startFight('Germany', 7)">Germany</button>
+        <button class="country-btn" onclick="startFight('Canada', 6)">Canada</button>
+        <button class="country-btn" onclick="startFight('Australia', 4)">Australia</button>
+        <button class="country-btn" onclick="startFight('Nigeria', 3)">Nigeria</button>
+        <button class="country-btn" onclick="startFight('Mexico', 5)">Mexico</button>
+    </div>
 
-        <div class="board" id="board"></div>
+    <div class="shop">
+        <h3>Shop</h3>
+        <button onclick="buyShape('square')">Buy Square Shape ($10)</button>
+        <button onclick="buyShape('triangle')">Buy Triangle Shape ($15)</button>
+    </div>
 
-        <div id="leaderboard">
-            <h2>Leaderboard</h2>
-            <table id="leaderboardTable">
-                <thead>
-                    <tr>
-                        <th>Rank</th>
-                        <th>Country</th>
-                        <th>Money</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <!-- Leaderboard entries will be inserted here -->
-                </tbody>
-            </table>
-        </div>
+    <div class="leaderboard">
+        <h3>Global Leaderboard</h3>
+        <ul id="leaderboardList"></ul>
     </div>
 
     <script src="game.js"></script>
-
 </body>
 </html>
+
