@@ -3,31 +3,32 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tic-Tac-Toe - Complicated Version</title>
-    <link rel="stylesheet" href="style.css">
+    <title>Tic Tac Toe - Complex Version</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: Arial, sans-serif; }
+        body { background: black; color: white; text-align: center; }
+        .board { display: grid; grid-template-columns: repeat(3, 100px); grid-gap: 10px; justify-content: center; margin-top: 50px; }
+        .cell { width: 100px; height: 100px; background: #333; display: flex; align-items: center; justify-content: center; font-size: 2em; cursor: pointer; }
+        .cell:hover { background: #555; }
+        .info { margin-top: 20px; font-size: 1.2em; }
+    </style>
 </head>
 <body>
-    <h1>Tic-Tac-Toe (Complicated Version)</h1>
-    <div id="gameContainer">
-        <div id="board">
-            <div class="row">
-                <div class="cell" data-index="0"></div>
-                <div class="cell" data-index="1"></div>
-                <div class="cell" data-index="2"></div>
-            </div>
-            <div class="row">
-                <div class="cell" data-index="3"></div>
-                <div class="cell" data-index="4"></div>
-                <div class="cell" data-index="5"></div>
-            </div>
-            <div class="row">
-                <div class="cell" data-index="6"></div>
-                <div class="cell" data-index="7"></div>
-                <div class="cell" data-index="8"></div>
-            </div>
-        </div>
-        <div id="status"></div>
-        <button id="restartBtn">Restart Game</button>
+    <h1>Tic Tac Toe - Complex Version</h1>
+    <div class="board">
+        <div class="cell" onclick="handlePlayerMove(0)"></div>
+        <div class="cell" onclick="handlePlayerMove(1)"></div>
+        <div class="cell" onclick="handlePlayerMove(2)"></div>
+        <div class="cell" onclick="handlePlayerMove(3)"></div>
+        <div class="cell" onclick="handlePlayerMove(4)"></div>
+        <div class="cell" onclick="handlePlayerMove(5)"></div>
+        <div class="cell" onclick="handlePlayerMove(6)"></div>
+        <div class="cell" onclick="handlePlayerMove(7)"></div>
+        <div class="cell" onclick="handlePlayerMove(8)"></div>
+    </div>
+    <div class="info">
+        <p>Current Player: <span id="currentPlayer">Player</span></p>
+        <button onclick="restartGame()">Restart Game</button>
     </div>
 
     <script src="game.js"></script>
