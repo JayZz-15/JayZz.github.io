@@ -32,6 +32,7 @@ window.onload = () => {
 function saveName() {
     playerName = document.getElementById('playerName').value;
     localStorage.setItem('playerName', playerName);
+    document.getElementById('nameConfirmation').textContent = `Name "${playerName}" has been saved!`;
     document.getElementById('playerDisplay').textContent = `Welcome, ${playerName}!`;
 }
 
@@ -184,11 +185,10 @@ function buyShape(shape) {
     }
 }
 
-// Start a fight with a selected country
+// Start a fight with a country
 function startFight(country, strength) {
     currentCountry = country;
     countryStrength = strength;
-    alert(`You are now fighting against ${country} with strength: ${strength}`);
-    localStorage.setItem('currentCountry', country); // Save the current country
-    restartGame(); // Restart the game with the new country
+    localStorage.setItem('currentCountry', country); // Save the country choice
+    alert(`You are fighting ${country}!`);
 }
