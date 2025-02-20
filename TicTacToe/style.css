@@ -3,6 +3,8 @@ body {
     font-family: Arial, sans-serif;
     background: black;
     color: white;
+    margin: 0;
+    padding: 0;
 }
 
 button {
@@ -12,10 +14,17 @@ button {
     color: white;
     border: none;
     cursor: pointer;
+    font-size: 18px;
+    border-radius: 5px;
+}
+
+button:hover {
+    background: darkblue;
 }
 
 .menu {
     display: none;
+    margin-top: 50px;
 }
 
 #board {
@@ -24,6 +33,7 @@ button {
     grid-template-rows: repeat(3, 100px);
     gap: 5px;
     margin: 20px auto;
+    justify-content: center;
 }
 
 .cell {
@@ -35,4 +45,5 @@ button {
     align-items: center;
     justify-content: center;
     cursor: pointer;
+    border: 2px solid white;
 }
