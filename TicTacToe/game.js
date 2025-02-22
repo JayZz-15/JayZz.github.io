@@ -7,6 +7,9 @@ let currentCountry = ''; // To store selected country
 let countryStrength = 0; // The strength of the country
 let playerName = ''; // Player's name
 
+// Leaderboard server URL (replace with your actual server URL)
+const leaderboardURL = 'http://localhost:3000/leaderboard';
+
 // Load saved data from localStorage
 window.onload = () => {
     if (localStorage.getItem('playerName')) {
@@ -30,6 +33,8 @@ window.onload = () => {
     // Attach event listeners for buttons
     document.getElementById('saveNameButton').addEventListener('click', saveName);
     document.getElementById('restartButton').addEventListener('click', restartGame);
+
+    fetchLeaderboard(); // Load the global leaderboard on startup
 };
 
 // Save the player's name to localStorage
@@ -42,19 +47,11 @@ function saveName() {
 
 // Country strength levels
 const countryStrengths = {
-    'USA': 10,
-    'Russia': 8,
-    'China': 9,
-    'Brazil': 5,
-    'India': 6,
-    'Germany': 7,
-    'Canada': 6,
-    'Australia': 4,
-    'Nigeria': 3,
-    'Mexico': 5
+    'USA': 10, 'Russia': 8, 'China': 9, 'Brazil': 5, 'India': 6,
+    'Germany': 7, 'Canada': 6, 'Australia': 4, 'Nigeria': 3, 'Mexico': 5
 };
 
-// Minimax algorithm for AI with dynamic strength
+// Minimax algorithm for AI with difficulty scaling
 const minimax = (board, depth, isMaximizing) => {
     const winner = checkWinner(board);
     if (winner === 'X') return -10 + depth;
@@ -134,6 +131,7 @@ function handlePlayerMove(index) {
             setTimeout(() => alert("Player wins! You earned $20"), 100);
             localStorage.setItem('money', money); // Save money
             updateMoney();
+            submitScore(); // Submit score to global leaderboard
             return;
         }
         currentPlayer = 'O';
@@ -141,7 +139,7 @@ function handlePlayerMove(index) {
     }
 }
 
-// AI's move (use weaker AI for weaker countries)
+// AI's move
 function aiMove() {
     const move = (countryStrength < 5) ? weakCountryMistakes(gameBoard) : bestMove(gameBoard);
     gameBoard[move] = 'O';
@@ -175,7 +173,7 @@ function restartGame() {
 function startFight(country, strength) {
     currentCountry = country;
     countryStrength = strength;
-    localStorage.setItem('currentCountry', country); // Save the country choice
+    localStorage.setItem('currentCountry', country);
     alert(`You are fighting ${country}!`);
 }
 
@@ -184,17 +182,38 @@ function updateMoney() {
     document.getElementById('money').textContent = money;
 }
 
-// Function to buy a shape
-function buyShape(shape) {
-    const cost = shape === 'square' ? 10 : 15;
-    if (money >= cost) {
-        money -= cost;
-        localStorage.setItem('money', money);
-        localStorage.setItem('playerShape', shape);
-        playerShape = shape;
-        updateMoney();
-        alert(`You bought the ${shape} shape!`);
-    } else {
-        alert('Not enough money!');
-    }
+// Submit score to global leaderboard
+function submitScore() {
+    fetch(leaderboardURL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: playerName, score: money }) 
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log('Score submitted:', data);
+        fetchLeaderboard(); // Refresh leaderboard
+    })
+    .catch(error => console.error('Error submitting score:', error));
+}
+
+// Fetch and update global leaderboard
+function fetchLeaderboard() {
+    fetch(leaderboardURL)
+        .then(response => response.json())
+        .then(data => {
+            updateLeaderboardUI(data);
+        })
+        .catch(error => console.error('Error fetching leaderboard:', error));
+}
+
+// Update leaderboard UI
+function updateLeaderboardUI(leaderboard) {
+    const leaderboardList = document.getElementById('leaderboardList');
+    leaderboardList.innerHTML = '';
+    leaderboard.forEach((player, index) => {
+        const listItem = document.createElement('li');
+        listItem.textContent = `${index + 1}. ${player.name} - $${player.score}`;
+        leaderboardList.appendChild(listItem);
+    });
 }
