@@ -121,7 +121,6 @@ function checkWinner(board) {
     return null;
 }
 
-// Handle the player's move
 function handlePlayerMove(index) {
     if (gameBoard[index] === '' && currentPlayer === 'X') {
         gameBoard[index] = playerShape; // Use the current shape
@@ -131,13 +130,14 @@ function handlePlayerMove(index) {
             setTimeout(() => alert("Player wins! You earned $20"), 100);
             localStorage.setItem('money', money); // Save money
             updateMoney();
-            submitScore(); // Submit score to global leaderboard
+            updateLeaderboard(); // Update leaderboard
             return;
         }
         currentPlayer = 'O';
         aiMove();
     }
 }
+
 
 // AI's move
 function aiMove() {
