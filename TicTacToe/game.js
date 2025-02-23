@@ -3,8 +3,8 @@ let gameBoard = ['', '', '', '', '', '', '', '', '']; // Empty board
 let currentPlayer = 'X'; // Player's turn starts first
 let money = 0; // Player's money
 let playerShape = 'X'; // Default player shape
-let currentCountry = ''; // To store selected country
-let countryStrength = 0; // The strength of the country
+let currentCountry = ''; // To store selected enemy country
+let countryStrength = 0; // The strength of the enemy country
 let playerName = ''; // Player's name
 
 // Load saved data from localStorage when the page loads
@@ -22,6 +22,13 @@ window.onload = () => {
   }
   if (localStorage.getItem('currentCountry')) {
     currentCountry = localStorage.getItem('currentCountry');
+    // If currentCountry is set, also set countryStrength based on your list
+    countryStrength = countryStrengths[currentCountry] || 0;
+  } else {
+    // No enemy chosen? Set a default enemy.
+    currentCountry = "USA";
+    countryStrength = countryStrengths["USA"];
+    localStorage.setItem('currentCountry', currentCountry);
   }
 
   // Attach event listeners for buttons
@@ -110,7 +117,7 @@ const bestMove = (board) => {
   return move;
 };
 
-// Check if there's a winner
+// Check for a winner
 function checkWinner(board) {
   const winPatterns = [
     [0, 1, 2], [3, 4, 5], [6, 7, 8],
@@ -132,8 +139,10 @@ function handlePlayerMove(index) {
     gameBoard[index] = playerShape;
     renderBoard();
     if (checkWinner(gameBoard)) {
-      money += 20;
-      setTimeout(() => alert("Player wins! You earned $20"), 100);
+      // Calculate reward based on enemy strength: harder enemies yield more money.
+      const reward = 20 * (1 + (countryStrength / 10)); // e.g. if strength=10, reward = $40
+      money += reward;
+      setTimeout(() => alert(`Player wins! You earned $${reward.toFixed(0)}`), 100);
       localStorage.setItem('money', money);
       updateMoney();
       return;
@@ -143,9 +152,13 @@ function handlePlayerMove(index) {
   }
 }
 
-// AI move
+// AI's move function with error handling
 function aiMove() {
-  const move = (countryStrength < 5) ? weakCountryMistakes(gameBoard) : bestMove(gameBoard);
+  let move = (countryStrength < 5) ? weakCountryMistakes(gameBoard) : bestMove(gameBoard);
+  if (move === undefined || move === -1) {
+    currentPlayer = 'X';
+    return;
+  }
   gameBoard[move] = 'O';
   renderBoard();
   if (checkWinner(gameBoard)) {
@@ -155,7 +168,7 @@ function aiMove() {
   }
 }
 
-// Render the game board on screen
+// Render the board on screen
 function renderBoard() {
   const cells = document.querySelectorAll('.cell');
   gameBoard.forEach((value, index) => {
@@ -172,7 +185,7 @@ function restartGame() {
   localStorage.setItem('gameBoard', JSON.stringify(gameBoard));
 }
 
-// Set up a fight with a country (updates country data)
+// Start a fight with a country (select enemy)
 function startFight(country, strength) {
   currentCountry = country;
   countryStrength = strength;
@@ -180,12 +193,12 @@ function startFight(country, strength) {
   alert(`You are fighting ${country}!`);
 }
 
-// Update the money display on the UI
+// Update money display on the UI
 function updateMoney() {
   document.getElementById('money').textContent = money;
 }
 
-// Buy a new shape for the player (deducts money and saves selection)
+// Buy a new shape for the player
 function buyShape(shape) {
   const cost = shape === 'square' ? 10 : 15;
   if (money >= cost) {
