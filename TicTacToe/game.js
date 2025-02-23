@@ -22,10 +22,9 @@ window.onload = () => {
   }
   if (localStorage.getItem('currentCountry')) {
     currentCountry = localStorage.getItem('currentCountry');
-    // If currentCountry is set, also set countryStrength based on your list
     countryStrength = countryStrengths[currentCountry] || 0;
   } else {
-    // No enemy chosen? Set a default enemy.
+    // Set default enemy if none selected
     currentCountry = "USA";
     countryStrength = countryStrengths["USA"];
     localStorage.setItem('currentCountry', currentCountry);
@@ -34,6 +33,7 @@ window.onload = () => {
   // Attach event listeners for buttons
   document.getElementById('saveNameButton').addEventListener('click', saveName);
   document.getElementById('restartButton').addEventListener('click', restartGame);
+  document.getElementById('attemptHeistButton').addEventListener('click', attemptHeist);
 };
 
 // Save the player's name to localStorage and update the UI
@@ -117,7 +117,7 @@ const bestMove = (board) => {
   return move;
 };
 
-// Check for a winner
+// Check if there's a winner
 function checkWinner(board) {
   const winPatterns = [
     [0, 1, 2], [3, 4, 5], [6, 7, 8],
@@ -139,8 +139,8 @@ function handlePlayerMove(index) {
     gameBoard[index] = playerShape;
     renderBoard();
     if (checkWinner(gameBoard)) {
-      // Calculate reward based on enemy strength: harder enemies yield more money.
-      const reward = 20 * (1 + (countryStrength / 10)); // e.g. if strength=10, reward = $40
+      // Reward increases based on enemy strength: reward = $20 * (1 + (strength/10))
+      const reward = 20 * (1 + (countryStrength / 10));
       money += reward;
       setTimeout(() => alert(`Player wins! You earned $${reward.toFixed(0)}`), 100);
       localStorage.setItem('money', money);
@@ -152,7 +152,7 @@ function handlePlayerMove(index) {
   }
 }
 
-// AI's move function with error handling
+// AI's move
 function aiMove() {
   let move = (countryStrength < 5) ? weakCountryMistakes(gameBoard) : bestMove(gameBoard);
   if (move === undefined || move === -1) {
@@ -168,7 +168,7 @@ function aiMove() {
   }
 }
 
-// Render the board on screen
+// Render the game board
 function renderBoard() {
   const cells = document.querySelectorAll('.cell');
   gameBoard.forEach((value, index) => {
@@ -198,17 +198,44 @@ function updateMoney() {
   document.getElementById('money').textContent = money;
 }
 
-// Buy a new shape for the player
-function buyShape(shape) {
-  const cost = shape === 'square' ? 10 : 15;
-  if (money >= cost) {
-    money -= cost;
-    localStorage.setItem('money', money);
-    localStorage.setItem('playerShape', shape);
-    playerShape = shape;
-    updateMoney();
-    alert(`You bought the ${shape} shape!`);
-  } else {
-    alert('Not enough money!');
+// ---------- Heist Minigame Functions ----------
+
+// Attach event listener for heist button
+document.getElementById('attemptHeistButton').addEventListener('click', attemptHeist);
+
+// Attempt the heist minigame
+function attemptHeist() {
+  // Get budget from input
+  let budget = parseInt(document.getElementById('heistBudget').value);
+  if (isNaN(budget) || budget <= 0) {
+    alert("Please enter a valid budget greater than 0.");
+    return;
   }
+  
+  // Get cosmetic selections (these don't affect outcome)
+  let vehicle = document.getElementById('heistVehicle').value;
+  let location = document.getElementById('heistLocation').value;
+  let weapon = document.getElementById('heistWeapon').value;
+  let disguise = document.getElementById('heistDisguise').value;
+  
+  // Determine win chance between 20% and 80%
+  let winChance = Math.random() * (80 - 20) + 20;
+  let roll = Math.random() * 100;
+  let resultText = "";
+  if (roll < winChance) {
+    // Success: double the budget is earned
+    let winnings = budget * 2;
+    money += winnings;
+    resultText = `Heist Successful! You earned $${winnings}.`;
+  } else {
+    // Failure: lose the budget
+    money -= budget;
+    if (money < 0) money = 0;
+    resultText = `Heist Failed! You lost $${budget}.`;
+  }
+  document.getElementById('heistResult').textContent = resultText;
+  localStorage.setItem('money', money);
+  updateMoney();
 }
+
+// (Optional) You can call attemptHeist() on button click via the event listener.
