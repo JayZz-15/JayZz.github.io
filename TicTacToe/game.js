@@ -7,25 +7,19 @@ let currentCountry = ''; // To store selected country
 let countryStrength = 0; // The strength of the country
 let playerName = ''; // Player's name
 
-// Leaderboard server URL (replace with your actual server URL if using a backend)
-const leaderboardURL = 'http://localhost:3000/leaderboard';
-
-// Load saved data from localStorage
+// Load saved data from localStorage when the page loads
 window.onload = () => {
   if (localStorage.getItem('playerName')) {
     playerName = localStorage.getItem('playerName');
     document.getElementById('playerDisplay').textContent = `Welcome, ${playerName}!`;
   }
-
   if (localStorage.getItem('money')) {
     money = parseInt(localStorage.getItem('money'));
     document.getElementById('money').textContent = money;
   }
-
   if (localStorage.getItem('playerShape')) {
     playerShape = localStorage.getItem('playerShape');
   }
-
   if (localStorage.getItem('currentCountry')) {
     currentCountry = localStorage.getItem('currentCountry');
   }
@@ -33,15 +27,9 @@ window.onload = () => {
   // Attach event listeners for buttons
   document.getElementById('saveNameButton').addEventListener('click', saveName);
   document.getElementById('restartButton').addEventListener('click', restartGame);
-
-  // Load global leaderboard (if backend is available)
-  fetchLeaderboard();
-  
-  // Also load local leaderboard as fallback
-  loadLocalLeaderboard();
 };
 
-// Save the player's name to localStorage
+// Save the player's name to localStorage and update the UI
 function saveName() {
   playerName = document.getElementById('playerName').value;
   localStorage.setItem('playerName', playerName);
@@ -55,11 +43,10 @@ const countryStrengths = {
   'Germany': 7, 'Canada': 6, 'Australia': 4, 'Nigeria': 3, 'Mexico': 5
 };
 
-// For weaker countries, allow AI mistakes
+// For weaker countries, allow AI to make mistakes
 function weakCountryMistakes(board) {
   const mistakeChance = Math.random();
   if (mistakeChance < 0.5) {
-    // 50% chance: choose a random move from available moves
     let availableMoves = [];
     for (let i = 0; i < board.length; i++) {
       if (board[i] === '') {
@@ -78,7 +65,7 @@ const minimax = (board, depth, isMaximizing) => {
   if (winner === 'O') return 10 - depth;
   if (!board.includes('')) return 0;
 
-  const adjustedDepth = depth * (1 + countryStrength * 0.1); // Scale difficulty
+  const adjustedDepth = depth * (1 + countryStrength * 0.1);
 
   if (isMaximizing) {
     let best = -Infinity;
@@ -105,7 +92,7 @@ const minimax = (board, depth, isMaximizing) => {
   }
 };
 
-// Get the best move for the AI
+// Determine the best move for the AI
 const bestMove = (board) => {
   let bestValue = -Infinity;
   let move = -1;
@@ -123,7 +110,7 @@ const bestMove = (board) => {
   return move;
 };
 
-// Check for a winner
+// Check if there's a winner
 function checkWinner(board) {
   const winPatterns = [
     [0, 1, 2], [3, 4, 5], [6, 7, 8],
@@ -139,7 +126,7 @@ function checkWinner(board) {
   return null;
 }
 
-// Handle player's move
+// Handle player's move on the board
 function handlePlayerMove(index) {
   if (gameBoard[index] === '' && currentPlayer === 'X') {
     gameBoard[index] = playerShape;
@@ -149,8 +136,6 @@ function handlePlayerMove(index) {
       setTimeout(() => alert("Player wins! You earned $20"), 100);
       localStorage.setItem('money', money);
       updateMoney();
-      updateLocalLeaderboard();
-      updateLeaderboard(); // Update global leaderboard if backend available
       return;
     }
     currentPlayer = 'O';
@@ -158,7 +143,7 @@ function handlePlayerMove(index) {
   }
 }
 
-// AI's move
+// AI move
 function aiMove() {
   const move = (countryStrength < 5) ? weakCountryMistakes(gameBoard) : bestMove(gameBoard);
   gameBoard[move] = 'O';
@@ -170,7 +155,7 @@ function aiMove() {
   }
 }
 
-// Render the board
+// Render the game board on screen
 function renderBoard() {
   const cells = document.querySelectorAll('.cell');
   gameBoard.forEach((value, index) => {
@@ -187,7 +172,7 @@ function restartGame() {
   localStorage.setItem('gameBoard', JSON.stringify(gameBoard));
 }
 
-// Start a fight with a country
+// Set up a fight with a country (updates country data)
 function startFight(country, strength) {
   currentCountry = country;
   countryStrength = strength;
@@ -195,102 +180,22 @@ function startFight(country, strength) {
   alert(`You are fighting ${country}!`);
 }
 
-// Update money display
+// Update the money display on the UI
 function updateMoney() {
   document.getElementById('money').textContent = money;
 }
 
-// ---------- Local Leaderboard Functions ----------
-
-// Load local leaderboard from localStorage
-function loadLocalLeaderboard() {
-  const leaderboard = JSON.parse(localStorage.getItem('leaderboard')) || [];
-  renderLocalLeaderboard(leaderboard);
-}
-
-// Save local leaderboard to localStorage
-function saveLocalLeaderboard(leaderboard) {
-  localStorage.setItem('leaderboard', JSON.stringify(leaderboard));
-}
-
-// Update local leaderboard after a game win
-function updateLocalLeaderboard() {
-  let leaderboard = JSON.parse(localStorage.getItem('leaderboard')) || [];
-  let playerEntry = leaderboard.find(entry => entry.name === playerName);
-  if (playerEntry) {
-    playerEntry.money = money;
+// Buy a new shape for the player (deducts money and saves selection)
+function buyShape(shape) {
+  const cost = shape === 'square' ? 10 : 15;
+  if (money >= cost) {
+    money -= cost;
+    localStorage.setItem('money', money);
+    localStorage.setItem('playerShape', shape);
+    playerShape = shape;
+    updateMoney();
+    alert(`You bought the ${shape} shape!`);
   } else {
-    leaderboard.push({ name: playerName, money: money });
-  }
-  leaderboard.sort((a, b) => b.money - a.money);
-  saveLocalLeaderboard(leaderboard);
-  renderLocalLeaderboard(leaderboard);
-}
-
-// Render local leaderboard UI
-function renderLocalLeaderboard(leaderboard) {
-  const leaderboardList = document.getElementById('leaderboardList');
-  leaderboardList.innerHTML = '';
-  if (leaderboard.length === 0) {
-    let li = document.createElement('li');
-    li.textContent = "No leaderboard data available.";
-    leaderboardList.appendChild(li);
-  } else {
-    leaderboard.slice(0, 5).forEach((player, index) => {
-      let li = document.createElement('li');
-      li.textContent = `${index + 1}. ${player.name} - $${player.money}`;
-      leaderboardList.appendChild(li);
-    });
-  }
-}
-
-// ---------- Global Leaderboard Functions ----------
-
-// Submit score to global leaderboard
-function updateLeaderboard() {
-  // Only attempt if playerName is set
-  if (!playerName) return;
-  
-  fetch(leaderboardURL, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ name: playerName, score: money })
-  })
-    .then(response => response.json())
-    .then(data => {
-      console.log('Global score submitted:', data);
-      fetchLeaderboard();
-    })
-    .catch(error => console.error('Error submitting global score:', error));
-}
-
-// Fetch global leaderboard from backend
-function fetchLeaderboard() {
-  fetch(leaderboardURL)
-    .then(response => response.json())
-    .then(data => {
-      updateGlobalLeaderboardUI(data);
-    })
-    .catch(error => {
-      console.error('Error fetching global leaderboard:', error);
-      // Fallback: show local leaderboard if global fails
-      loadLocalLeaderboard();
-    });
-}
-
-// Update global leaderboard UI
-function updateGlobalLeaderboardUI(leaderboard) {
-  const leaderboardList = document.getElementById('leaderboardList');
-  leaderboardList.innerHTML = '';
-  if (leaderboard.length === 0) {
-    let li = document.createElement('li');
-    li.textContent = "No global leaderboard data available.";
-    leaderboardList.appendChild(li);
-  } else {
-    leaderboard.forEach((player, index) => {
-      let li = document.createElement('li');
-      li.textContent = `${index + 1}. ${player.name} - $${player.score}`;
-      leaderboardList.appendChild(li);
-    });
+    alert('Not enough money!');
   }
 }
