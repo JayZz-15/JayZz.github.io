@@ -28,6 +28,11 @@ class CountryRelations {
         }
         return false;
     }
+
+    // Remove alliance if relations drop
+    removeAlliance() {
+        this.alliance = false;
+    }
 }
 
 class Diplomacy {
@@ -73,17 +78,30 @@ class Diplomacy {
     // Handle war initiation (multi-board Tic-Tac-Toe)
     initiateWar(country) {
         console.log(`${country.countryName} has declared war! Starting multi-board Tic-Tac-Toe.`);
-        let totalPlayers = this.countries.filter(c => c.alliance).length;
+        let totalPlayers = this.countries.filter(c => c.alliance).length + 1; // Include player in the count
         let numBoards = Math.ceil(totalPlayers / 2);
         // Trigger the war mechanic with the calculated number of boards
         startMultiBoardGame(numBoards, country);
     }
-}
 
-function startMultiBoardGame(numBoards, country) {
-    // Logic to start a multi-board game, where each board represents a battlefront
-    console.log(`Starting a multi-board Tic-Tac-Toe game with ${numBoards} boards against ${country.countryName}.`);
-    // This is where you would integrate the multi-board gameplay logic.
+    // Form alliances with countries (for multi-board mechanics)
+    formAlliance(countryName) {
+        let country = this.countries.find(c => c.countryName === countryName);
+        if (country) {
+            if (country.formAlliance()) {
+                console.log(`${countryName} has formed an alliance with you!`);
+            }
+        }
+    }
+
+    // Remove alliances if relations fall too low
+    removeAlliance(countryName) {
+        let country = this.countries.find(c => c.countryName === countryName);
+        if (country) {
+            country.removeAlliance();
+            console.log(`${countryName} has broken the alliance.`);
+        }
+    }
 }
 
 class Player {
@@ -105,6 +123,70 @@ class Player {
     updateDiplomacy() {
         this.diplomacy.checkForWar();
     }
+
+    // Form an alliance with a country
+    formAlliance(countryName) {
+        this.diplomacy.formAlliance(countryName);
+    }
+
+    // Remove alliance with a country
+    removeAlliance(countryName) {
+        this.diplomacy.removeAlliance(countryName);
+    }
+}
+
+// Multi-board Tic-Tac-Toe Setup
+function startMultiBoardGame(numBoards, country) {
+    console.log(`Starting a multi-board Tic-Tac-Toe game with ${numBoards} boards against ${country.countryName}.`);
+    // Initialize the multi-board game (simulate the boards)
+    for (let i = 0; i < numBoards; i++) {
+        startTicTacToeBoard(i + 1, country);
+    }
+}
+
+// Single board Tic-Tac-Toe game logic
+function startTicTacToeBoard(boardNum, country) {
+    console.log(`Starting Tic-Tac-Toe board ${boardNum} against ${country.countryName}.`);
+    // Add logic for the Tic-Tac-Toe game here (initialize the board, handle moves, etc.)
+    // You can connect this with existing Tic-Tac-Toe gameplay logic
+    const board = ['', '', '', '', '', '', '', '', '']; // Empty board for the new game
+    let currentPlayer = 'Player'; // Change depending on the player turn
+    let winner = null;
+
+    // Game loop (simplified for demonstration)
+    while (!winner && board.includes('')) {
+        // Randomly decide a move for now (replace with your game logic)
+        const move = Math.floor(Math.random() * 9);
+        if (board[move] === '') {
+            board[move] = currentPlayer === 'Player' ? 'X' : 'O';
+            currentPlayer = currentPlayer === 'Player' ? 'AI' : 'Player'; // Switch turns
+        }
+
+        // Check for a winner after each move (simplified check)
+        winner = checkWinner(board);
+    }
+
+    if (winner) {
+        console.log(`Board ${boardNum}: Winner is ${winner}!`);
+    } else {
+        console.log(`Board ${boardNum}: It's a tie!`);
+    }
+}
+
+// Check if there's a winner on a Tic-Tac-Toe board
+function checkWinner(board) {
+    const winPatterns = [
+        [0, 1, 2], [3, 4, 5], [6, 7, 8],
+        [0, 3, 6], [1, 4, 7], [2, 5, 8],
+        [0, 4, 8], [2, 4, 6]
+    ];
+    for (let pattern of winPatterns) {
+        const [a, b, c] = pattern;
+        if (board[a] && board[a] === board[b] && board[a] === board[c]) {
+            return board[a];
+        }
+    }
+    return null;
 }
 
 // Example Usage:
@@ -125,3 +207,8 @@ player.updateDiplomacy();
 player.diplomacy.countries[1].decreaseRelation(60);  // Decrease Russia's relation below threshold to trigger war
 player.updateDiplomacy();
 
+// Forming an alliance with a country
+player.formAlliance("USA");
+
+// Removing an alliance with a country
+player.removeAlliance("Russia");
