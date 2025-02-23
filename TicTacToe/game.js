@@ -200,45 +200,42 @@ function updateMoney() {
 
 // ---------- Heist Minigame Functions ----------
 
-// Attempt the heist minigame
 function attemptHeist() {
   let budget = parseInt(document.getElementById('heistBudget').value);
   if (isNaN(budget) || budget <= 0) {
     alert("Please enter a valid budget greater than 0.");
     return;
   }
-  // Ensure budget does not exceed available money
   if (budget > money) {
     alert("Your heist budget cannot exceed your available money!");
     return;
   }
-  
-  // Get cosmetic selections (they don't affect outcome)
+
   let vehicle = document.getElementById('heistVehicle').value;
   let location = document.getElementById('heistLocation').value;
   let weapon = document.getElementById('heistWeapon').value;
   let disguise = document.getElementById('heistDisguise').value;
-  let gadget = document.getElementById('heistGadget').value; // New option
-  
-  // Determine win chance between 20% and 80%
+  let gadget = document.getElementById('heistGadget').value;
+
   let winChance = Math.random() * (80 - 20) + 20;
   let roll = Math.random() * 100;
+
   let resultText = "";
   if (roll < winChance) {
-    // Success: double the budget is earned
     let winnings = budget * 2;
     money += winnings;
-    resultText = `Heist Successful! With your ${vehicle} and ${gadget}, you robbed the ${location} and earned $${winnings}.`;
+    resultText = `Heist Successful! You used a ${gadget} and a ${vehicle} to rob the ${location} and earned $${winnings}.`;
   } else {
-    // Failure: lose the budget
-    money -= budget;
+    money -= budget; // Deduct budget on failure
     if (money < 0) money = 0;
-    resultText = `Heist Failed! Your plan using a ${vehicle} and ${gadget} at the ${location} failed, and you lost $${budget}.`;
+    resultText = `Heist Failed! Your ${gadget} and ${vehicle} were not enough. You lost $${budget}.`;
   }
+
   document.getElementById('heistResult').textContent = resultText;
   localStorage.setItem('money', money);
   updateMoney();
 }
+
 
 // Attach event listener for heist button in window.onload (already done above)
 
