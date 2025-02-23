@@ -139,8 +139,8 @@ function handlePlayerMove(index) {
     gameBoard[index] = playerShape;
     renderBoard();
     if (checkWinner(gameBoard)) {
-      // Reward increases based on enemy strength: reward = $20 * (1 + (strength/10))
-      const reward = 20 * (1 + (countryStrength / 10));
+      // Reward increases based on enemy strength
+      const reward = 20 * (1 + (countryStrength / 10)); // e.g., strength=10 gives $40 reward
       money += reward;
       setTimeout(() => alert(`Player wins! You earned $${reward.toFixed(0)}`), 100);
       localStorage.setItem('money', money);
@@ -168,7 +168,7 @@ function aiMove() {
   }
 }
 
-// Render the game board
+// Render the game board on screen
 function renderBoard() {
   const cells = document.querySelectorAll('.cell');
   gameBoard.forEach((value, index) => {
@@ -200,23 +200,25 @@ function updateMoney() {
 
 // ---------- Heist Minigame Functions ----------
 
-// Attach event listener for heist button
-document.getElementById('attemptHeistButton').addEventListener('click', attemptHeist);
-
 // Attempt the heist minigame
 function attemptHeist() {
-  // Get budget from input
   let budget = parseInt(document.getElementById('heistBudget').value);
   if (isNaN(budget) || budget <= 0) {
     alert("Please enter a valid budget greater than 0.");
     return;
   }
+  // Ensure budget does not exceed available money
+  if (budget > money) {
+    alert("Your heist budget cannot exceed your available money!");
+    return;
+  }
   
-  // Get cosmetic selections (these don't affect outcome)
+  // Get cosmetic selections (they don't affect outcome)
   let vehicle = document.getElementById('heistVehicle').value;
   let location = document.getElementById('heistLocation').value;
   let weapon = document.getElementById('heistWeapon').value;
   let disguise = document.getElementById('heistDisguise').value;
+  let gadget = document.getElementById('heistGadget').value; // New option
   
   // Determine win chance between 20% and 80%
   let winChance = Math.random() * (80 - 20) + 20;
@@ -226,16 +228,18 @@ function attemptHeist() {
     // Success: double the budget is earned
     let winnings = budget * 2;
     money += winnings;
-    resultText = `Heist Successful! You earned $${winnings}.`;
+    resultText = `Heist Successful! With your ${vehicle} and ${gadget}, you robbed the ${location} and earned $${winnings}.`;
   } else {
     // Failure: lose the budget
     money -= budget;
     if (money < 0) money = 0;
-    resultText = `Heist Failed! You lost $${budget}.`;
+    resultText = `Heist Failed! Your plan using a ${vehicle} and ${gadget} at the ${location} failed, and you lost $${budget}.`;
   }
   document.getElementById('heistResult').textContent = resultText;
   localStorage.setItem('money', money);
   updateMoney();
 }
 
-// (Optional) You can call attemptHeist() on button click via the event listener.
+// Attach event listener for heist button in window.onload (already done above)
+
+// End of game.js
