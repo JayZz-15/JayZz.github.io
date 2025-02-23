@@ -5,30 +5,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Tic Tac Toe - Complex Version</title>
   <style>
+    /* Existing styles */
     * { margin: 0; padding: 0; box-sizing: border-box; font-family: Arial, sans-serif; }
     body { background: black; color: white; display: flex; flex-direction: column; }
-    .game-container { 
-      overflow: auto; 
-      height: 80vh; /* To allow scrolling */
-      padding: 20px;
-    }
-    .board { 
-      display: grid; 
-      grid-template-columns: repeat(3, 100px); 
-      grid-gap: 10px; 
-      justify-content: center; 
-      margin-top: 50px; 
-    }
-    .cell { 
-      width: 100px; 
-      height: 100px; 
-      background: #333; 
-      display: flex; 
-      align-items: center; 
-      justify-content: center; 
-      font-size: 2em; 
-      cursor: pointer; 
-    }
+    .game-container { overflow: auto; height: 80vh; padding: 20px; }
+    .board { display: grid; grid-template-columns: repeat(3, 100px); grid-gap: 10px; justify-content: center; margin-top: 50px; }
+    .cell { width: 100px; height: 100px; background: #333; display: flex; align-items: center; justify-content: center; font-size: 2em; cursor: pointer; }
     .cell:hover { background: #555; }
     .info { margin-top: 20px; font-size: 1.2em; }
     .shop { margin-top: 20px; }
@@ -44,6 +26,19 @@
     .heist button { margin-top: 15px; padding: 10px; background: #444; color: white; border: none; cursor: pointer; }
     .heist button:hover { background: #666; }
     .heist p { margin-top: 10px; font-size: 1.2em; }
+
+    /* New styles for Diplomacy and War */
+    .diplomacy { margin-top: 30px; }
+    .diplomacy h3 { font-size: 1.5em; }
+    .relationship-bar { background: #555; width: 100%; height: 20px; }
+    .positive { background: green; height: 100%; }
+    .neutral { background: yellow; height: 100%; }
+    .negative { background: red; height: 100%; }
+    .war-btn { padding: 10px; background: red; color: white; border: none; cursor: pointer; margin: 10px; }
+    .war-btn:hover { background: darkred; }
+    .alliance { margin-top: 20px; }
+    .alliance button { margin-top: 10px; padding: 10px; background: #444; color: white; border: none; cursor: pointer; }
+    .alliance button:hover { background: #666; }
   </style>
 </head>
 <body>
@@ -94,6 +89,24 @@
       <button class="country-btn" onclick="startFight('Mexico', 5)">Mexico</button>
     </div>
 
+    <!-- Diplomacy section -->
+    <div class="diplomacy">
+      <h3>Current Alliances</h3>
+      <div id="alliances">
+        <!-- Example content -->
+        <p>USA: Allied</p>
+        <p>Russia: Neutral</p>
+        <p>China: Enemy</p>
+      </div>
+
+      <div class="alliance">
+        <h4>Start a War with a Country</h4>
+        <button class="war-btn" onclick="startWar('USA')">Declare War on USA</button>
+        <button class="war-btn" onclick="startWar('Russia')">Declare War on Russia</button>
+        <button class="war-btn" onclick="startWar('China')">Declare War on China</button>
+      </div>
+    </div>
+
     <!-- Shop area -->
     <div class="shop">
       <h3>Shop</h3>
@@ -141,12 +154,12 @@
       </select>
       
       <label for="heistGadget">Choose a Gadget:</label>
-<select id="heistGadget">
-  <option value="Hacking Device">Hacking Device</option>
-  <option value="EMP">EMP</option>
-  <option value="Grappling Hook">Grappling Hook</option>
-  <option value="Smoke Bomb">Smoke Bomb</option>
-</select>
+      <select id="heistGadget">
+        <option value="Hacking Device">Hacking Device</option>
+        <option value="EMP">EMP</option>
+        <option value="Grappling Hook">Grappling Hook</option>
+        <option value="Smoke Bomb">Smoke Bomb</option>
+      </select>
 
       <button id="attemptHeistButton">Attempt Heist</button>
       <p id="heistResult"></p>
