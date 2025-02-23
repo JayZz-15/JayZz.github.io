@@ -224,17 +224,18 @@ function attemptHeist() {
   if (roll < winChance) {
     let winnings = budget * 2;
     money += winnings;
-    resultText = `Heist Successful! You used a ${gadget} and a ${vehicle} to rob the ${location} and earned $${winnings}.`;
+    resultText = Heist Successful! You used a ${gadget} and a ${vehicle} to rob the ${location} and earned $${winnings}.;
   } else {
     money -= budget; // Deduct budget on failure
     if (money < 0) money = 0;
-    resultText = `Heist Failed! Your ${gadget} and ${vehicle} were not enough. You lost $${budget}.`;
+    resultText = Heist Failed! Your ${gadget} and ${vehicle} were not enough. You lost $${budget}.;
   }
 
   document.getElementById('heistResult').textContent = resultText;
   localStorage.setItem('money', money);
   updateMoney();
 }
+
 
 // Attach event listener for heist button in window.onload (already done above)
 
