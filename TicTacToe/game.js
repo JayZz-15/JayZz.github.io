@@ -34,10 +34,10 @@ window.onload = () => {
   document.getElementById('saveNameButton').addEventListener('click', saveName);
   document.getElementById('restartButton').addEventListener('click', restartGame);
 
-  // Load global leaderboard (if using a backend)
+  // Load global leaderboard (if backend is available)
   fetchLeaderboard();
   
-  // Also load the local leaderboard
+  // Also load local leaderboard as fallback
   loadLocalLeaderboard();
 };
 
@@ -55,11 +55,11 @@ const countryStrengths = {
   'Germany': 7, 'Canada': 6, 'Australia': 4, 'Nigeria': 3, 'Mexico': 5
 };
 
-// For weaker countries, allow mistakes
+// For weaker countries, allow AI mistakes
 function weakCountryMistakes(board) {
   const mistakeChance = Math.random();
   if (mistakeChance < 0.5) {
-    // 50% chance to pick a random move
+    // 50% chance: choose a random move from available moves
     let availableMoves = [];
     for (let i = 0; i < board.length; i++) {
       if (board[i] === '') {
@@ -150,7 +150,7 @@ function handlePlayerMove(index) {
       localStorage.setItem('money', money);
       updateMoney();
       updateLocalLeaderboard();
-      updateLeaderboard(); // Also update the global leaderboard if backend is used
+      updateLeaderboard(); // Update global leaderboard if backend available
       return;
     }
     currentPlayer = 'O';
@@ -200,11 +200,12 @@ function updateMoney() {
   document.getElementById('money').textContent = money;
 }
 
-// ---------- LOCAL LEADERBOARD FUNCTIONS ----------
+// ---------- Local Leaderboard Functions ----------
 
 // Load local leaderboard from localStorage
 function loadLocalLeaderboard() {
-  return JSON.parse(localStorage.getItem('leaderboard')) || [];
+  const leaderboard = JSON.parse(localStorage.getItem('leaderboard')) || [];
+  renderLocalLeaderboard(leaderboard);
 }
 
 // Save local leaderboard to localStorage
@@ -214,10 +215,10 @@ function saveLocalLeaderboard(leaderboard) {
 
 // Update local leaderboard after a game win
 function updateLocalLeaderboard() {
-  let leaderboard = loadLocalLeaderboard();
-  let playerFound = leaderboard.find(p => p.name === playerName);
-  if (playerFound) {
-    playerFound.money = money;
+  let leaderboard = JSON.parse(localStorage.getItem('leaderboard')) || [];
+  let playerEntry = leaderboard.find(entry => entry.name === playerName);
+  if (playerEntry) {
+    playerEntry.money = money;
   } else {
     leaderboard.push({ name: playerName, money: money });
   }
@@ -230,27 +231,37 @@ function updateLocalLeaderboard() {
 function renderLocalLeaderboard(leaderboard) {
   const leaderboardList = document.getElementById('leaderboardList');
   leaderboardList.innerHTML = '';
-  leaderboard.slice(0, 5).forEach((player, index) => {
+  if (leaderboard.length === 0) {
     let li = document.createElement('li');
-    li.textContent = `${index + 1}. ${player.name} - $${player.money}`;
+    li.textContent = "No leaderboard data available.";
     leaderboardList.appendChild(li);
-  });
+  } else {
+    leaderboard.slice(0, 5).forEach((player, index) => {
+      let li = document.createElement('li');
+      li.textContent = `${index + 1}. ${player.name} - $${player.money}`;
+      leaderboardList.appendChild(li);
+    });
+  }
 }
 
-// ---------- GLOBAL LEADERBOARD FUNCTIONS ----------
+// ---------- Global Leaderboard Functions ----------
+
 // Submit score to global leaderboard
-function submitScore() {
+function updateLeaderboard() {
+  // Only attempt if playerName is set
+  if (!playerName) return;
+  
   fetch(leaderboardURL, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ name: playerName, score: money })
   })
-  .then(response => response.json())
-  .then(data => {
-    console.log('Score submitted:', data);
-    fetchLeaderboard();
-  })
-  .catch(error => console.error('Error submitting score:', error));
+    .then(response => response.json())
+    .then(data => {
+      console.log('Global score submitted:', data);
+      fetchLeaderboard();
+    })
+    .catch(error => console.error('Error submitting global score:', error));
 }
 
 // Fetch global leaderboard from backend
@@ -258,22 +269,28 @@ function fetchLeaderboard() {
   fetch(leaderboardURL)
     .then(response => response.json())
     .then(data => {
-      updateLeaderboardUI(data);
+      updateGlobalLeaderboardUI(data);
     })
-    .catch(error => console.error('Error fetching leaderboard:', error));
+    .catch(error => {
+      console.error('Error fetching global leaderboard:', error);
+      // Fallback: show local leaderboard if global fails
+      loadLocalLeaderboard();
+    });
 }
 
 // Update global leaderboard UI
-function updateLeaderboardUI(leaderboard) {
+function updateGlobalLeaderboardUI(leaderboard) {
   const leaderboardList = document.getElementById('leaderboardList');
   leaderboardList.innerHTML = '';
-  leaderboard.forEach((player, index) => {
+  if (leaderboard.length === 0) {
     let li = document.createElement('li');
-    li.textContent = `${index + 1}. ${player.name} - $${player.score}`;
+    li.textContent = "No global leaderboard data available.";
     leaderboardList.appendChild(li);
-  });
+  } else {
+    leaderboard.forEach((player, index) => {
+      let li = document.createElement('li');
+      li.textContent = `${index + 1}. ${player.name} - $${player.score}`;
+      leaderboardList.appendChild(li);
+    });
+  }
 }
-
-// Optionally, you can call submitScore() at game end to update the global leaderboard.
-// For example, inside handlePlayerMove() after a win:
-//   submitScore();
