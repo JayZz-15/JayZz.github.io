@@ -42,7 +42,7 @@ window.onload = () => {
   // Attach event listeners for buttons
   document.getElementById('saveNameButton').addEventListener('click', saveName);
   document.getElementById('restartButton').addEventListener('click', restartGame);
-  document.getElementById('attemptHeistButton').addEventListener('click', attemptHeist);
+  document.getElementById('attemptHeistButton').addEventListener('click', attemptHeist);  // Ensure this button works
 };
 
 // Save the player's name to localStorage and update the UI
@@ -232,6 +232,7 @@ function updateMoney() {
 
 // ---------- Heist Minigame Functions ----------
 
+// This function should be called when the player clicks the 'attemptHeistButton'
 function attemptHeist() {
   let budget = parseInt(document.getElementById('heistBudget').value);
   if (isNaN(budget) || budget <= 0) {
@@ -253,7 +254,20 @@ function attemptHeist() {
     return;
   }
 
+  // Subtract the budget from the player's money
   money -= budget;
+  localStorage.setItem('money', money);
+  updateMoney();
+
+  // Simulate a risk factor for success/failure
+  const riskFactor = Math.random();
+  if (riskFactor < 0.5) {
+    alert("The heist was successful! You earned $500.");
+    money += 500; // Reward for success
+  } else {
+    alert("The heist failed! You lost the budget.");
+  }
+  
   localStorage.setItem('money', money);
   updateMoney();
 }
