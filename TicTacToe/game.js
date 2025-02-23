@@ -6,14 +6,12 @@ let playerShape = 'X'; // Default player shape
 let currentCountry = ''; // To store selected enemy country
 let countryStrength = 0; // The strength of the enemy country
 let playerName = ''; // Player's name
-let countryRelations = {}; // Store relationships with countries
-let alliances = {}; // Store alliances with other countries
 
 // Load saved data from localStorage when the page loads
 window.onload = () => {
   if (localStorage.getItem('playerName')) {
     playerName = localStorage.getItem('playerName');
-    document.getElementById('playerDisplay').textContent = `Welcome, ${playerName}!`;
+    document.getElementById('playerDisplay').textContent = Welcome, ${playerName}!;
   }
   if (localStorage.getItem('money')) {
     money = parseInt(localStorage.getItem('money'));
@@ -32,25 +30,18 @@ window.onload = () => {
     localStorage.setItem('currentCountry', currentCountry);
   }
 
-  // Load country relations from localStorage
-  if (localStorage.getItem('countryRelations')) {
-    countryRelations = JSON.parse(localStorage.getItem('countryRelations'));
-  } else {
-    initializeCountryRelations();
-  }
-
   // Attach event listeners for buttons
   document.getElementById('saveNameButton').addEventListener('click', saveName);
   document.getElementById('restartButton').addEventListener('click', restartGame);
-  document.getElementById('attemptHeistButton').addEventListener('click', attemptHeist);  // Ensure this button works
+  document.getElementById('attemptHeistButton').addEventListener('click', attemptHeist);
 };
 
 // Save the player's name to localStorage and update the UI
 function saveName() {
   playerName = document.getElementById('playerName').value;
   localStorage.setItem('playerName', playerName);
-  document.getElementById('nameConfirmation').textContent = `Name "${playerName}" has been saved!`;
-  document.getElementById('playerDisplay').textContent = `Welcome, ${playerName}!`;
+  document.getElementById('nameConfirmation').textContent = Name "${playerName}" has been saved!;
+  document.getElementById('playerDisplay').textContent = Welcome, ${playerName}!;
 }
 
 // Country strength levels
@@ -58,14 +49,6 @@ const countryStrengths = {
   'USA': 10, 'Russia': 8, 'China': 9, 'Brazil': 5, 'India': 6,
   'Germany': 7, 'Canada': 6, 'Australia': 4, 'Nigeria': 3, 'Mexico': 5
 };
-
-// Initialize country relations with neutral values
-function initializeCountryRelations() {
-  for (let country in countryStrengths) {
-    countryRelations[country] = 50; // Neutral relationship level
-  }
-  localStorage.setItem('countryRelations', JSON.stringify(countryRelations));
-}
 
 // For weaker countries, allow AI to make mistakes
 function weakCountryMistakes(board) {
@@ -159,7 +142,7 @@ function handlePlayerMove(index) {
       // Reward increases based on enemy strength
       const reward = 20 * (1 + (countryStrength / 10)); // e.g., strength=10 gives $40 reward
       money += reward;
-      setTimeout(() => alert(`Player wins! You earned $${reward.toFixed(0)}`), 100);
+      setTimeout(() => alert(Player wins! You earned $${reward.toFixed(0)}), 100);
       localStorage.setItem('money', money);
       updateMoney();
       return;
@@ -207,22 +190,7 @@ function startFight(country, strength) {
   currentCountry = country;
   countryStrength = strength;
   localStorage.setItem('currentCountry', country);
-  alert(`You are fighting ${country}!`);
-
-  // Update country relations based on fight outcome
-  updateRelationsAfterFight(country, strength);
-}
-
-// Update country relations based on fight outcome
-function updateRelationsAfterFight(country, strength) {
-  // Simulate relationship changes after a battle
-  let relationshipChange = countryStrength > strength ? -5 : 5;
-  countryRelations[country] += relationshipChange;
-
-  // Prevent relationships from going out of bounds (0 - 100)
-  countryRelations[country] = Math.max(0, Math.min(100, countryRelations[country]));
-  
-  localStorage.setItem('countryRelations', JSON.stringify(countryRelations));
+  alert(You are fighting ${country}!);
 }
 
 // Update money display on the UI
@@ -232,7 +200,6 @@ function updateMoney() {
 
 // ---------- Heist Minigame Functions ----------
 
-// This function should be called when the player clicks the 'attemptHeistButton'
 function attemptHeist() {
   let budget = parseInt(document.getElementById('heistBudget').value);
   if (isNaN(budget) || budget <= 0) {
@@ -244,31 +211,34 @@ function attemptHeist() {
     return;
   }
 
-  let vehicle = document.getElementById('vehicleChoice').value;
-  if (vehicle === 'car') {
-    alert(`You are attempting a car heist with a budget of $${budget}.`);
-  } else if (vehicle === 'plane') {
-    alert(`You are attempting a plane heist with a budget of $${budget}.`);
+  let vehicle = document.getElementById('heistVehicle').value;
+  let location = document.getElementById('heistLocation').value;
+  let weapon = document.getElementById('heistWeapon').value;
+  let disguise = document.getElementById('heistDisguise').value;
+  let gadget = document.getElementById('heistGadget').value;
+
+  let winChance = Math.random() * (80 - 20) + 20;
+  let roll = Math.random() * 100;
+
+  let resultText = "";
+  if (roll < winChance) {
+    let winnings = budget * 2;
+    money += winnings;
+    resultText = Heist Successful! You used a ${gadget} and a ${vehicle} to rob the ${location} and earned $${winnings}.;
   } else {
-    alert("Invalid vehicle choice. Choose a car or a plane.");
-    return;
+    money -= budget; // Deduct budget on failure
+    if (money < 0) money = 0;
+    resultText = Heist Failed! Your ${gadget} and ${vehicle} were not enough. You lost $${budget}.;
   }
 
-  // Subtract the budget from the player's money
-  money -= budget;
-  localStorage.setItem('money', money);
-  updateMoney();
-
-  // Simulate a risk factor for success/failure
-  const riskFactor = Math.random();
-  if (riskFactor < 0.5) {
-    alert("The heist was successful! You earned $500.");
-    money += 500; // Reward for success
-  } else {
-    alert("The heist failed! You lost the budget.");
-  }
-  
+  document.getElementById('heistResult').textContent = resultText;
   localStorage.setItem('money', money);
   updateMoney();
 }
+
+
+// Attach event listener for heist button in window.onload (already done above)
+
+// End of game.js
+
 
