@@ -5,13 +5,73 @@ let money = 0; // Player's money
 let playerShape = 'X'; // Default player shape
 let currentCountry = ''; // To store selected enemy country
 let countryStrength = 0; // The strength of the enemy country
-let playerName = ''; // Player's name
+let playerName = '';
+
+// Country strength levels
+const countryStrengths = {
+  'USA': 10, 'Russia': 8, 'China': 9, 'Brazil': 5, 'India': 6,
+  'Germany': 7, 'Canada': 6, 'Australia': 4, 'Nigeria': 3, 'Mexico': 5
+};
+
+// Heist bonus values for funny options
+const heistBonuses = {
+  vehicle: {
+    'Car': 5,
+    'Motorcycle': 3,
+    'Van': 7,
+    'Helicopter': 10,
+    'Banana Car': 2,
+    'Rickshaw': -2,
+    'Hoverboard': 4,
+    'Spaceship': 15
+  },
+  location: {
+    'Bank': 10,
+    'Casino': 5,
+    'Museum': 3,
+    'Jewelry Store': 8,
+    'Ice Cream Parlor': 12,
+    'Candy Factory': 10,
+    'Roller Disco': 4,
+    'Secret Lair': 15
+  },
+  weapon: {
+    'Pistol': 5,
+    'Shotgun': 7,
+    'Rifle': 10,
+    'None': 0,
+    'Rubber Chicken': 2,
+    'Water Gun': 4,
+    'Banana Peel': 6,
+    'Feather Duster': 3
+  },
+  disguise: {
+    'Mask': 3,
+    'Suit': 5,
+    'Casual': 2,
+    'None': 0,
+    'Giant Chicken Costume': 8,
+    'Clown Outfit': 6,
+    'Zombie Costume': 7,
+    'SpongeBob Costume': 5
+  },
+  gadget: {
+    'Hacking Device': 10,
+    'EMP': 8,
+    'Grappling Hook': 5,
+    'Smoke Bomb': 7,
+    'Silly String': 3,
+    'Whoopee Cushion': 4,
+    'Exploding Cake': 9,
+    'Magic Wand': 12
+  }
+};
 
 // Load saved data from localStorage when the page loads
 window.onload = () => {
   if (localStorage.getItem('playerName')) {
     playerName = localStorage.getItem('playerName');
-    document.getElementById('playerDisplay').textContent = Welcome, ${playerName}!;
+    document.getElementById('playerDisplay').textContent = `Welcome, ${playerName}!`;
   }
   if (localStorage.getItem('money')) {
     money = parseInt(localStorage.getItem('money'));
@@ -40,15 +100,26 @@ window.onload = () => {
 function saveName() {
   playerName = document.getElementById('playerName').value;
   localStorage.setItem('playerName', playerName);
-  document.getElementById('nameConfirmation').textContent = Name "${playerName}" has been saved!;
-  document.getElementById('playerDisplay').textContent = Welcome, ${playerName}!;
+  document.getElementById('nameConfirmation').textContent = `Name "${playerName}" has been saved!`;
+  document.getElementById('playerDisplay').textContent = `Welcome, ${playerName}!`;
 }
 
-// Country strength levels
-const countryStrengths = {
-  'USA': 10, 'Russia': 8, 'China': 9, 'Brazil': 5, 'India': 6,
-  'Germany': 7, 'Canada': 6, 'Australia': 4, 'Nigeria': 3, 'Mexico': 5
-};
+// Shop function for buying shapes
+function buyShape(shape) {
+  let cost = 0;
+  if (shape === 'square') cost = 10;
+  else if (shape === 'triangle') cost = 15;
+  if (money >= cost) {
+    money -= cost;
+    playerShape = shape;
+    localStorage.setItem('money', money);
+    localStorage.setItem('playerShape', shape);
+    updateMoney();
+    alert(`You bought a ${shape} shape! Now you’ll be a cut above the rest!`);
+  } else {
+    alert("Not enough money!");
+  }
+}
 
 // For weaker countries, allow AI to make mistakes
 function weakCountryMistakes(board) {
@@ -142,7 +213,7 @@ function handlePlayerMove(index) {
       // Reward increases based on enemy strength
       const reward = 20 * (1 + (countryStrength / 10)); // e.g., strength=10 gives $40 reward
       money += reward;
-      setTimeout(() => alert(Player wins! You earned $${reward.toFixed(0)}), 100);
+      setTimeout(() => alert(`Player wins! You earned $${reward.toFixed(0)} – Cha-ching!`), 100);
       localStorage.setItem('money', money);
       updateMoney();
       return;
@@ -162,7 +233,7 @@ function aiMove() {
   gameBoard[move] = 'O';
   renderBoard();
   if (checkWinner(gameBoard)) {
-    setTimeout(() => alert("AI wins!"), 100);
+    setTimeout(() => alert("AI wins! Better luck next time."), 100);
   } else {
     currentPlayer = 'X';
   }
@@ -190,7 +261,7 @@ function startFight(country, strength) {
   currentCountry = country;
   countryStrength = strength;
   localStorage.setItem('currentCountry', country);
-  alert(You are fighting ${country}!);
+  alert(`Gear up! You're now fighting ${country} – let the epic showdown commence!`);
 }
 
 // Update money display on the UI
@@ -210,33 +281,49 @@ function attemptHeist() {
     alert("Your heist budget cannot exceed your available money!");
     return;
   }
-
+  
   let vehicle = document.getElementById('heistVehicle').value;
   let location = document.getElementById('heistLocation').value;
   let weapon = document.getElementById('heistWeapon').value;
   let disguise = document.getElementById('heistDisguise').value;
   let gadget = document.getElementById('heistGadget').value;
-
-  let winChance = Math.random() * (80 - 20) + 20;
+  
+  // Calculate win chance based on chosen parameters
+  let baseChance = 30;
+  let vehicleBonus = heistBonuses.vehicle[vehicle] || 0;
+  let locationBonus = heistBonuses.location[location] || 0;
+  let weaponBonus = heistBonuses.weapon[weapon] || 0;
+  let disguiseBonus = heistBonuses.disguise[disguise] || 0;
+  let gadgetBonus = heistBonuses.gadget[gadget] || 0;
+  
+  let winChance = baseChance + vehicleBonus + locationBonus + weaponBonus + disguiseBonus + gadgetBonus;
+  // Cap the win chance between 5% and 95%
+  winChance = Math.max(5, Math.min(95, winChance));
+  
   let roll = Math.random() * 100;
-
+  
   let resultText = "";
   if (roll < winChance) {
     let winnings = budget * 2;
     money += winnings;
-    resultText = Heist Successful! You used a ${gadget} and a ${vehicle} to rob the ${location} and earned $${winnings}.;
+    const successMessages = [
+      `Heist Successful! Your ${gadget} and ${vehicle} made the perfect combo to rob the ${location}. You earned $${winnings}!`,
+      `Victory! The ${weapon} and ${disguise} got you past security at the ${location}. You've doubled your money to $${winnings}!`,
+      `Smooth heist! With a dash of ${gadget} and a hint of ${disguise}, the ${location} was a cakewalk. You scored $${winnings}!`
+    ];
+    resultText = successMessages[Math.floor(Math.random() * successMessages.length)];
   } else {
-    money -= budget; // Deduct budget on failure
+    money -= budget;
     if (money < 0) money = 0;
-    resultText = Heist Failed! Your ${gadget} and ${vehicle} were not enough. You lost $${budget}.;
+    const failureMessages = [
+      `Heist Failed! Your ${gadget} malfunctioned and the ${vehicle} broke down at the ${location}. You lost $${budget}.`,
+      `Disaster! The ${weapon} was more of a prop and your ${disguise} didn't fool anyone at the ${location}. Lost $${budget}.`,
+      `Ouch! The plan went sideways – your ${gadget} and ${vehicle} couldn't save you at the ${location}. You lost $${budget}.`
+    ];
+    resultText = failureMessages[Math.floor(Math.random() * failureMessages.length)];
   }
-
+  
   document.getElementById('heistResult').textContent = resultText;
   localStorage.setItem('money', money);
   updateMoney();
 }
-
-
-// Attach event listener for heist button in window.onload (already done above)
-
-// End of game.js
