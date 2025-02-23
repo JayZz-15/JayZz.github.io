@@ -37,6 +37,10 @@
     .countries { display: flex; flex-direction: column; margin: 20px; }
     .country-btn { padding: 10px; margin: 10px; background: #444; color: white; border: none; cursor: pointer; }
     .country-btn:hover { background: #666; }
+    .diplomacy { margin-top: 20px; border: 2px solid #444; padding: 10px; }
+    .diplomacy label, .diplomacy select, .diplomacy input, .diplomacy button { margin-top: 5px; display: block; }
+    .diplomacy button { padding: 10px; background: #444; color: white; border: none; cursor: pointer; }
+    .diplomacy button:hover { background: #666; }
     .heist { margin-top: 30px; padding: 10px; border: 2px solid #444; }
     .heist h3 { font-size: 1.5em; margin-bottom: 10px; }
     .heist label { display: block; margin-top: 10px; }
@@ -94,13 +98,29 @@
       <button class="country-btn" onclick="startFight('Mexico', 5)">Mexico</button>
     </div>
 
-    <!-- Shop area -->
-    <div class="shop">
-      <h3>Shop</h3>
-      <button onclick="buyShape('square')">Buy Square Shape ($10)</button>
-      <button onclick="buyShape('triangle')">Buy Triangle Shape ($15)</button>
+    <!-- Diplomacy Section -->
+    <div class="diplomacy">
+      <h3>Diplomacy</h3>
+      <label for="diplomacyCountry">Select Country:</label>
+      <select id="diplomacyCountry">
+        <option value="USA">USA</option>
+        <option value="Russia">Russia</option>
+        <option value="China">China</option>
+        <option value="Brazil">Brazil</option>
+        <option value="India">India</option>
+        <option value="Germany">Germany</option>
+        <option value="Canada">Canada</option>
+        <option value="Australia">Australia</option>
+        <option value="Nigeria">Nigeria</option>
+        <option value="Mexico">Mexico</option>
+      </select>
+      <label for="diplomacyAmount">Amount to Send:</label>
+      <input type="number" id="diplomacyAmount" placeholder="Enter amount" />
+      <button id="sendDiplomacyButton">Send Money</button>
+      <p id="diplomacyResult"></p>
+      <div id="relationsDisplay"></div>
     </div>
-    
+
     <!-- Heist minigame area -->
     <div class="heist">
       <h3>Heist Minigame</h3>
