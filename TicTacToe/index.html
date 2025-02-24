@@ -5,12 +5,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Ticked Tacked Toed</title>
   <style>
-    /* Basic styling – feel free to customize */
+    /* Basic styling – tweak as desired */
     * { margin: 0; padding: 0; box-sizing: border-box; font-family: Arial, sans-serif; }
     body { background: black; color: white; display: flex; flex-direction: column; }
     .game-container { 
       overflow: auto; 
-      height: 80vh; /* To allow scrolling */
+      height: 80vh; 
       padding: 20px;
     }
     .board { 
@@ -49,7 +49,7 @@
     .heist button { margin-top: 15px; padding: 10px; background: #444; color: white; border: none; cursor: pointer; }
     .heist button:hover { background: #666; }
     .heist p { margin-top: 10px; font-size: 1.2em; }
-    .relations { margin-top: 20px; border: 2px solid #444; padding: 10px; }
+    .relations, .alliances { margin-top: 20px; border: 2px solid #444; padding: 10px; }
   </style>
 </head>
 <body>
@@ -85,7 +85,7 @@
       <button id="restartButton">Restart Game</button>
     </div>
 
-    <!-- Country Selection (Expanded) -->
+    <!-- Expanded Country Selection -->
     <div class="countries">
       <h3>Choose Country to Fight</h3>
       <button class="country-btn" onclick="startFight('USA', 10)">USA</button>
@@ -102,6 +102,10 @@
       <button class="country-btn" onclick="startFight('France', 7)">France</button>
       <button class="country-btn" onclick="startFight('Japan', 9)">Japan</button>
       <button class="country-btn" onclick="startFight('South Korea', 8)">South Korea</button>
+      <button class="country-btn" onclick="startFight('Italy', 7)">Italy</button>
+      <button class="country-btn" onclick="startFight('Spain', 6)">Spain</button>
+      <button class="country-btn" onclick="startFight('Turkey', 7)">Turkey</button>
+      <button class="country-btn" onclick="startFight('South Africa', 4)">South Africa</button>
     </div>
 
     <!-- Diplomacy Section -->
@@ -109,6 +113,7 @@
       <h3>Diplomacy</h3>
       <label for="diplomacyCountry">Select Country:</label>
       <select id="diplomacyCountry">
+        <!-- Options match extended countries -->
         <option value="USA">USA</option>
         <option value="Russia">Russia</option>
         <option value="China">China</option>
@@ -140,17 +145,23 @@
       <div id="relationsDisplay"></div>
     </div>
 
-    <!-- Alliance Shop Section -->
+    <!-- Alliance Overview -->
+    <div class="alliances">
+      <h3>Alliance Overview</h3>
+      <div id="alliancesDisplay"></div>
+    </div>
+
+    <!-- Alliance Upgrade Shop -->
     <div class="alliance-shop">
       <h3>Alliance Upgrades</h3>
-      <button onclick="buyUpgrade('Spy Drone')">Buy Spy Drone ($50)</button>
-      <button onclick="buyUpgrade('Cyber Warfare')">Buy Cyber Warfare Upgrade ($100)</button>
-      <button onclick="buyUpgrade('Diplomatic Immunity')">Buy Diplomatic Immunity ($150)</button>
-      <button onclick="buyUpgrade('Nuclear Option')">Buy Nuclear Option ($200)</button>
+      <button onclick="buyUpgrade('Spy Drone')">Buy Spy Drone ($500)</button>
+      <button onclick="buyUpgrade('Cyber Warfare')">Buy Cyber Warfare Upgrade ($1000)</button>
+      <button onclick="buyUpgrade('Diplomatic Immunity')">Buy Diplomatic Immunity ($1500)</button>
+      <button onclick="buyUpgrade('Nuke')">Buy Nuke ($2000)</button>
       <div id="upgradeResult"></div>
     </div>
 
-    <!-- Heist Minigame Area -->
+    <!-- Heist Minigame -->
     <div class="heist">
       <h3>Heist Minigame</h3>
       <p>Set your heist parameters and try your luck!</p>
@@ -216,9 +227,8 @@
     </div>
   </div>
 
-  <!-- Load the core game logic first, then the alliance/diplomacy system -->
+  <!-- Load the core game logic first, then the alliance system -->
   <script src="game.js"></script>
   <script src="alliance.js"></script>
 </body>
 </html>
-
