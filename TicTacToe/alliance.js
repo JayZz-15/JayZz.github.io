@@ -1,6 +1,6 @@
 /* alliance.js */
 
-// Extended countries data (with many new nations)
+// Extended countries including fictional ones
 const extendedCountries = {
   'USA': { strength: 10, relation: 100 },
   'Russia': { strength: 8, relation: 100 },
@@ -19,7 +19,12 @@ const extendedCountries = {
   'Italy': { strength: 7, relation: 100 },
   'Spain': { strength: 6, relation: 100 },
   'Turkey': { strength: 7, relation: 100 },
-  'South Africa': { strength: 4, relation: 100 }
+  'South Africa': { strength: 4, relation: 100 },
+  // Fictional countries
+  'Zorg': { strength: 9, relation: 100 },
+  'Xandar': { strength: 8, relation: 100 },
+  'Nova': { strength: 7, relation: 100 },
+  'Aurora': { strength: 6, relation: 100 }
 };
 
 // Merge extended countries into global objects
@@ -32,24 +37,28 @@ for (let country in extendedCountries) {
 }
 countryRelations = extendedRelations;
 
-// Define alliances (by region/interest)
+// Define alliances (some based on regions, others entirely fictional)
 let alliances = {
   "Western Alliance": ["USA", "UK", "France", "Germany", "Canada", "Australia"],
   "Eastern Bloc": ["Russia", "China", "India", "Brazil", "Mexico"],
   "Mediterranean Union": ["Italy", "Spain", "Turkey"],
   "Asia-Pacific": ["Japan", "South Korea", "Australia"],
-  "African Coalition": ["Nigeria", "South Africa"]
+  "African Coalition": ["Nigeria", "South Africa"],
+  "Rebel Alliance": ["Zorg", "Xandar"],
+  "Intergalactic Coalition": ["Nova", "Aurora"]
 };
 
-// Alliance upgrades (costs scaled up)
+// Additional alliance upgrades – costs are high now
 let allianceUpgrades = {
   "Spy Drone": { cost: 5000, effect: (allianceName) => { improveAllianceRelations(allianceName, 50); } },
   "Cyber Warfare": { cost: 10000, effect: (allianceName) => { improveAllianceRelations(allianceName, 100); } },
   "Diplomatic Immunity": { cost: 15000, effect: (allianceName) => { improveAllianceRelations(allianceName, 150); } },
-  "Nuke": { cost: 20000, effect: (allianceName) => { deployNuke(allianceName); } }
+  "Nuke": { cost: 1000000, effect: (allianceName) => { deployNuke(allianceName); } },
+  "Economic Sanctions": { cost: 8000, effect: (allianceName) => { damageAlliance(allianceName, 50); } },
+  "Propaganda Campaign": { cost: 5000, effect: (allianceName) => { money += 2000; alert("Propaganda Campaign boosted your economy by $2000!"); } }
 };
 
-// Update relations display
+// Update relations display (shows all countries)
 function updateRelationsDisplay() {
   let html = "<ul>";
   for (let country in countryRelations) {
@@ -60,7 +69,7 @@ function updateRelationsDisplay() {
   updateAlliancesDisplay();
 }
 
-// Update Alliance Overview display
+// Update Alliance Overview display (lists alliances and their members)
 function updateAlliancesDisplay() {
   let html = "";
   for (let allianceName in alliances) {
@@ -85,7 +94,15 @@ function updateCountryRelation(country, delta) {
   }
 }
 
-// Diplomacy: send money to improve relations (money deducted in core game)
+// Damage an alliance: lower relations for all members
+function damageAlliance(allianceName, amount) {
+  alliances[allianceName].forEach(country => {
+    updateCountryRelation(country, -amount);
+  });
+  document.getElementById('upgradeResult').textContent = `${allianceName} relations decreased by ${amount} points.`;
+}
+
+// Diplomacy: send money to improve relations (money deducted in game.js)
 function sendDiplomacy() {
   const selectedCountry = document.getElementById('diplomacyCountry').value;
   const amount = parseInt(document.getElementById('diplomacyAmount').value);
@@ -111,7 +128,7 @@ function checkAllianceWar() {
   }
 }
 
-// Trigger an alliance war event (multi-board war mode)
+// Trigger an alliance war event (multi–board war mode)
 function triggerAllianceWar(allianceName) {
   warMode = true;
   alert(`Alliance War! The ${allianceName} has united against you!`);
@@ -126,7 +143,7 @@ function improveAllianceRelations(allianceName, amount) {
   document.getElementById('upgradeResult').textContent = `${allianceName} relations improved by ${amount} points.`;
 }
 
-// Deploy a Nuke: eliminate the country with the worst relation in the alliance (randomly among equals)
+// Deploy a Nuke: eliminate the worst–related country in the alliance
 function deployNuke(allianceName) {
   let arr = alliances[allianceName].filter(c => c in countryRelations);
   if (!arr.length) { document.getElementById('upgradeResult').textContent = `No targets in ${allianceName}.`; return; }
@@ -135,7 +152,7 @@ function deployNuke(allianceName) {
   let eliminated = candidates[Math.floor(Math.random() * candidates.length)];
   delete countryRelations[eliminated];
   delete countryStrengths[eliminated];
-  // Remove from all alliances
+  // Remove eliminated country from all alliances
   for (let key in alliances) {
     alliances[key] = alliances[key].filter(c => c !== eliminated);
   }
@@ -147,7 +164,7 @@ function deployNuke(allianceName) {
 function buyUpgrade(itemName) {
   const upgrade = allianceUpgrades[itemName];
   if (!upgrade) { alert("Invalid upgrade!"); return; }
-  if (money < upgrade.cost) { alert("Not enough money!"); return; }
+  if (money < upgrade.cost) { alert("Not enough money for this upgrade!"); return; }
   let allianceName = prompt("Enter alliance name to apply upgrade (e.g., 'Western Alliance'):");
   if (!alliances[allianceName] || alliances[allianceName].length === 0) { alert("Invalid or empty alliance!"); return; }
   money -= upgrade.cost;
@@ -155,7 +172,7 @@ function buyUpgrade(itemName) {
   upgrade.effect(allianceName);
 }
 
-// --- New: Form Alliance ---
+// --- Form Alliance ---
 // Global array for player's allied countries
 let playerAlliances = [];
 function formAlliance(country) {
@@ -178,44 +195,37 @@ function updatePlayerAlliancesDisplay() {
   document.getElementById("playerAlliancesDisplay").innerHTML = html;
 }
 
-// --- Multi-Board War Mode ---
-// Simulate a war as a 3x3 grid of mini-games. For each mini-game, determine win probabilistically.
+// --- Multi–Board War Mode ---
+// Simulate war as 9 mini–games; win majority to get reward.
 function startAllianceWar(allianceName) {
-  // Hide the normal board (for simplicity)
+  // Hide normal board
   document.getElementById('gameBoardSection').style.display = "none";
   let wins = 0;
   let losses = 0;
-  // Determine enemy quality based on alliance average relation
   let arr = alliances[allianceName].filter(c => c in countryRelations);
   let total = arr.reduce((sum, c) => sum + countryRelations[c], 0);
   let avgRelation = arr.length ? total / arr.length : 100;
-  // For powerful alliances, lower win chance
-  let baseWinChance = avgRelation < 50 ? 0.4 : 0.2;  // e.g. 40% vs. 20%
-  
-  // Simulate 9 boards
+  let baseWinChance = avgRelation < 50 ? 0.4 : 0.2;
   for (let i = 0; i < 9; i++) {
-    // Here you could implement full interactive play; we simulate with probability:
     if (Math.random() < baseWinChance) wins++; else losses++;
   }
-  
-  // Determine war outcome: need at least 5 wins
   if (wins >= 5) {
-    let reward = 10000; // Big reward
+    let reward = 10000;
     money += reward;
-    document.getElementById('warResult').textContent = `War won! You earned $${reward}. (Boards won: ${wins} / 9)`;
+    document.getElementById('warResult').textContent = `War won! You earned $${reward}. (Boards won: ${wins}/9)`;
   } else {
     let penalty = 5000;
     money = Math.max(0, money - penalty);
-    document.getElementById('warResult').textContent = `War lost! You lost $${penalty}. (Boards won: ${wins} / 9)`;
+    document.getElementById('warResult').textContent = `War lost! You lost $${penalty}. (Boards won: ${wins}/9)`;
   }
   updateMoney();
-  // End war mode and show normal board again
   warMode = false;
   document.getElementById('gameBoardSection').style.display = "grid";
 }
 
-// Initialize displays on page load
+// Initialize displays and attach event listeners on load
 window.addEventListener('load', () => {
   updateRelationsDisplay();
   updatePlayerAlliancesDisplay();
+  document.getElementById('sendDiplomacyButton').addEventListener('click', sendDiplomacy);
 });
