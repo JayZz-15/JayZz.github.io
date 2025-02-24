@@ -8,70 +8,11 @@ let countryStrength = 0; // The strength of the enemy country
 let playerName = '';
 let warMode = false; // Whether a war event is active
 
-// Country strength levels
+// Base Country strength levels (the alliance script will extend these)
 const countryStrengths = {
   'USA': 10, 'Russia': 8, 'China': 9, 'Brazil': 5, 'India': 6,
-  'Germany': 7, 'Canada': 6, 'Australia': 4, 'Nigeria': 3, 'Mexico': 5
-};
-
-// Country relations (0-100; 100 = best, 0 = worst)
-let countryRelations = {
-  'USA': 100, 'Russia': 100, 'China': 100, 'Brazil': 100, 'India': 100,
-  'Germany': 100, 'Canada': 100, 'Australia': 100, 'Nigeria': 100, 'Mexico': 100
-};
-
-// Heist bonus values for funny options
-const heistBonuses = {
-  vehicle: {
-    'Car': 5,
-    'Motorcycle': 3,
-    'Van': 7,
-    'Helicopter': 10,
-    'Banana Car': 2,
-    'Rickshaw': -2,
-    'Hoverboard': 4,
-    'Spaceship': 15
-  },
-  location: {
-    'Bank': 10,
-    'Casino': 5,
-    'Museum': 3,
-    'Jewelry Store': 8,
-    'Ice Cream Parlor': 12,
-    'Candy Factory': 10,
-    'Roller Disco': 4,
-    'Secret Lair': 15
-  },
-  weapon: {
-    'Pistol': 5,
-    'Shotgun': 7,
-    'Rifle': 10,
-    'None': 0,
-    'Rubber Chicken': 2,
-    'Water Gun': 4,
-    'Banana Peel': 6,
-    'Feather Duster': 3
-  },
-  disguise: {
-    'Mask': 3,
-    'Suit': 5,
-    'Casual': 2,
-    'None': 0,
-    'Giant Chicken Costume': 8,
-    'Clown Outfit': 6,
-    'Zombie Costume': 7,
-    'SpongeBob Costume': 5
-  },
-  gadget: {
-    'Hacking Device': 10,
-    'EMP': 8,
-    'Grappling Hook': 5,
-    'Smoke Bomb': 7,
-    'Silly String': 3,
-    'Whoopee Cushion': 4,
-    'Exploding Cake': 9,
-    'Magic Wand': 12
-  }
+  'Germany': 7, 'Canada': 6, 'Australia': 4, 'Nigeria': 3, 'Mexico': 5,
+  'UK': 8, 'France': 7, 'Japan': 9, 'South Korea': 8
 };
 
 // Load saved data from localStorage when the page loads
@@ -91,19 +32,14 @@ window.onload = () => {
     currentCountry = localStorage.getItem('currentCountry');
     countryStrength = countryStrengths[currentCountry] || 0;
   } else {
-    // Set default enemy if none selected
     currentCountry = "USA";
     countryStrength = countryStrengths["USA"];
     localStorage.setItem('currentCountry', currentCountry);
   }
   
-  // Attach event listeners for buttons
   document.getElementById('saveNameButton').addEventListener('click', saveName);
   document.getElementById('restartButton').addEventListener('click', restartGame);
   document.getElementById('attemptHeistButton').addEventListener('click', attemptHeist);
-  document.getElementById('sendDiplomacyButton').addEventListener('click', sendDiplomacy);
-  
-  updateRelationsDisplay();
 };
 
 // Save the player's name and update UI
@@ -132,63 +68,6 @@ function buyShape(shape) {
 // Update money display
 function updateMoney() {
   document.getElementById('money').textContent = money;
-}
-
-// Update the display of all country relations
-function updateRelationsDisplay() {
-  let html = "<ul>";
-  for (let country in countryRelations) {
-    html += `<li>${country}: ${countryRelations[country]}</li>`;
-  }
-  html += "</ul>";
-  document.getElementById("relationsDisplay").innerHTML = html;
-}
-
-// Update a country's relation score and check for war events
-function updateCountryRelation(country, delta) {
-  if (countryRelations[country] !== undefined) {
-    countryRelations[country] += delta;
-    // Clamp between 0 and 100
-    if (countryRelations[country] > 100) countryRelations[country] = 100;
-    if (countryRelations[country] < 0) countryRelations[country] = 0;
-    updateRelationsDisplay();
-    checkAllianceWar();
-  }
-}
-
-// Send money to improve relations via diplomacy
-function sendDiplomacy() {
-  const selectedCountry = document.getElementById('diplomacyCountry').value;
-  const amount = parseInt(document.getElementById('diplomacyAmount').value);
-  if (isNaN(amount) || amount <= 0) {
-    alert("Please enter a valid amount greater than 0.");
-    return;
-  }
-  if (amount > money) {
-    alert("You don't have enough money!");
-    return;
-  }
-  // Deduct money and improve relation (e.g., each $10 increases relation by 1 point)
-  money -= amount;
-  updateMoney();
-  const relationIncrease = Math.floor(amount / 10);
-  updateCountryRelation(selectedCountry, relationIncrease);
-  document.getElementById('diplomacyResult').textContent = `You sent $${amount} to ${selectedCountry}. Their relation improved by ${relationIncrease} points.`;
-}
-
-// Check if enough countries are hostile to trigger an alliance war event
-function checkAllianceWar() {
-  let hostileCount = 0;
-  for (let country in countryRelations) {
-    if (countryRelations[country] < 30) {
-      hostileCount++;
-    }
-  }
-  if (hostileCount >= 3 && !warMode) {
-    warMode = true;
-    alert("The hostile nations have allied against you! Prepare for a massive war!");
-    // Here you could trigger a larger board or multi-board war mode.
-  }
 }
 
 // For weaker countries, allow AI to make mistakes
@@ -280,14 +159,11 @@ function handlePlayerMove(index) {
     gameBoard[index] = playerShape;
     renderBoard();
     if (checkWinner(gameBoard)) {
-      // Reward increases based on enemy strength
       const reward = 20 * (1 + (countryStrength / 10));
       money += reward;
       setTimeout(() => alert(`Player wins! You earned $${reward.toFixed(0)} – Cha-ching!`), 100);
       localStorage.setItem('money', money);
       updateMoney();
-      // Lower relation more if you keep attacking this country
-      updateCountryRelation(currentCountry, -10);
       return;
     }
     currentPlayer = 'O';
@@ -306,8 +182,6 @@ function aiMove() {
   renderBoard();
   if (checkWinner(gameBoard)) {
     setTimeout(() => alert("AI wins! Better luck next time."), 100);
-    // Even if you lose, your repeated attacks lower relations (but less so)
-    updateCountryRelation(currentCountry, -5);
   } else {
     currentPlayer = 'X';
   }
@@ -333,13 +207,11 @@ function restartGame() {
 // Start a fight with a country (select enemy)
 function startFight(country, strength) {
   currentCountry = country;
-  countryStrength = strength;
+  countryStrength = countryStrengths[country] || 0;
   localStorage.setItem('currentCountry', country);
   alert(`Gear up! You're now fighting ${country} – let the epic showdown commence!`);
-  // Initiating a fight lowers relations slightly by default
-  updateCountryRelation(country, -5);
 }
-
+  
 // ---------- Heist Minigame Functions ----------
 function attemptHeist() {
   let budget = parseInt(document.getElementById('heistBudget').value);
@@ -358,7 +230,6 @@ function attemptHeist() {
   let disguise = document.getElementById('heistDisguise').value;
   let gadget = document.getElementById('heistGadget').value;
   
-  // Calculate win chance based on chosen parameters
   let baseChance = 30;
   let vehicleBonus = heistBonuses.vehicle[vehicle] || 0;
   let locationBonus = heistBonuses.location[location] || 0;
