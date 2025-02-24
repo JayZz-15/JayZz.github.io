@@ -1,285 +1,294 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Ticked Tacked Toed - World Domination Edition</title>
-  <style>
-    /* Basic styling – tweak as desired */
-    * { margin: 0; padding: 0; box-sizing: border-box; font-family: Arial, sans-serif; }
-    body { background: black; color: white; display: flex; flex-direction: column; }
-    .game-container { 
-      overflow: auto; 
-      height: 90vh; 
-      padding: 20px;
+// Global variables
+let gameBoard = ['', '', '', '', '', '', '', '', ''];
+let currentPlayer = 'X';
+let money = 0;
+let playerShape = 'X';
+let currentCountry = '';
+let countryStrength = 0;
+let playerName = '';
+let warMode = false;
+
+// Base country strengths – extended later in alliance.js
+const countryStrengths = {
+  'USA': 10, 'Russia': 8, 'China': 9, 'Brazil': 5, 'India': 6,
+  'Germany': 7, 'Canada': 6, 'Australia': 4, 'Nigeria': 3, 'Mexico': 5,
+  'UK': 8, 'France': 7, 'Japan': 9, 'South Korea': 8
+};
+
+// Heist bonus values
+const heistBonuses = {
+  vehicle: {
+    'Car': 5, 'Motorcycle': 3, 'Van': 7, 'Helicopter': 10,
+    'Banana Car': 2, 'Rickshaw': -2, 'Hoverboard': 4, 'Spaceship': 15
+  },
+  location: {
+    'Bank': 10, 'Casino': 5, 'Museum': 3, 'Jewelry Store': 8,
+    'Ice Cream Parlor': 12, 'Candy Factory': 10, 'Roller Disco': 4, 'Secret Lair': 15
+  },
+  weapon: {
+    'Pistol': 5, 'Shotgun': 7, 'Rifle': 10, 'None': 0,
+    'Rubber Chicken': 2, 'Water Gun': 4, 'Banana Peel': 6, 'Feather Duster': 3
+  },
+  disguise: {
+    'Mask': 3, 'Suit': 5, 'Casual': 2, 'None': 0,
+    'Giant Chicken Costume': 8, 'Clown Outfit': 6, 'Zombie Costume': 7, 'SpongeBob Costume': 5
+  },
+  gadget: {
+    'Hacking Device': 10, 'EMP': 8, 'Grappling Hook': 5, 'Smoke Bomb': 7,
+    'Silly String': 3, 'Whoopee Cushion': 4, 'Exploding Cake': 9, 'Magic Wand': 12
+  }
+};
+
+// Random events: 5% chance each move
+function triggerRandomEvent() {
+  if (Math.random() < 0.05) {
+    const events = [
+      () => { money += 500; alert("Lucky break! You found a secret cache. +$500!"); },
+      () => { gameBoard = ['', '', '', '', '', '', '', '', '']; renderBoard(); alert("Time Warp! The board has been reset."); },
+      () => {
+        if (playerAlliances.length > 0) {
+          let betrayed = playerAlliances[Math.floor(Math.random() * playerAlliances.length)];
+          playerAlliances = playerAlliances.filter(c => c !== betrayed);
+          alert(`Betrayal! ${betrayed} has defected from your alliance.`);
+          updatePlayerAlliancesDisplay();
+        }
+      },
+      () => { alert("Glitch in the Matrix! The AI stumbles this turn."); }
+    ];
+    events[Math.floor(Math.random() * events.length)]();
+    updateMoney();
+  }
+}
+
+// On page load
+window.onload = () => {
+  if (localStorage.getItem('playerName')) {
+    playerName = localStorage.getItem('playerName');
+    document.getElementById('playerDisplay').textContent = `Welcome, ${playerName}!`;
+  }
+  if (localStorage.getItem('money')) {
+    money = parseInt(localStorage.getItem('money'));
+    document.getElementById('money').textContent = money;
+  }
+  if (localStorage.getItem('playerShape')) {
+    playerShape = localStorage.getItem('playerShape');
+  }
+  if (localStorage.getItem('currentCountry')) {
+    currentCountry = localStorage.getItem('currentCountry');
+    countryStrength = countryStrengths[currentCountry] || 0;
+  } else {
+    currentCountry = "USA";
+    countryStrength = countryStrengths["USA"];
+    localStorage.setItem('currentCountry', currentCountry);
+  }
+  document.getElementById('saveNameButton').addEventListener('click', saveName);
+  document.getElementById('restartButton').addEventListener('click', restartGame);
+  document.getElementById('attemptHeistButton').addEventListener('click', attemptHeist);
+  triggerRandomEvent();
+};
+
+// Save player name
+function saveName() {
+  playerName = document.getElementById('playerName').value;
+  localStorage.setItem('playerName', playerName);
+  document.getElementById('nameConfirmation').textContent = `Name "${playerName}" has been saved!`;
+  document.getElementById('playerDisplay').textContent = `Welcome, ${playerName}!`;
+}
+
+// Buy shape (costs increased)
+function buyShape(shape) {
+  let cost = (shape === 'square') ? 100 : (shape === 'triangle') ? 150 : 0;
+  if (money >= cost) {
+    money -= cost;
+    playerShape = shape;
+    localStorage.setItem('money', money);
+    localStorage.setItem('playerShape', shape);
+    updateMoney();
+    alert(`You bought a ${shape} shape for $${cost}.`);
+  } else {
+    alert("Not enough money!");
+  }
+}
+
+// Update money display
+function updateMoney() {
+  document.getElementById('money').textContent = money;
+}
+
+// Minimax algorithm for AI, modified by countryStrength
+const minimax = (board, depth, isMaximizing) => {
+  const winner = checkWinner(board);
+  if (winner === 'X') return -10 + depth;
+  if (winner === 'O') return 10 - depth;
+  if (!board.includes('')) return 0;
+  const adjustedDepth = depth * (1 + countryStrength * 0.1);
+  if (isMaximizing) {
+    let best = -Infinity;
+    for (let i = 0; i < board.length; i++) {
+      if (board[i] === '') {
+        board[i] = 'O';
+        best = Math.max(best, minimax(board, adjustedDepth + 1, false));
+        board[i] = '';
+      }
     }
-    .section { margin-top: 20px; padding: 10px; border: 2px solid #444; }
-    .board { 
-      display: grid; 
-      grid-template-columns: repeat(3, 100px); 
-      grid-gap: 10px; 
-      justify-content: center; 
-      margin-top: 20px; 
+    return best;
+  } else {
+    let best = Infinity;
+    for (let i = 0; i < board.length; i++) {
+      if (board[i] === '') {
+        board[i] = 'X';
+        best = Math.min(best, minimax(board, adjustedDepth + 1, true));
+        board[i] = '';
+      }
     }
-    .cell { 
-      width: 100px; 
-      height: 100px; 
-      background: #333; 
-      display: flex; 
-      align-items: center; 
-      justify-content: center; 
-      font-size: 2em; 
-      cursor: pointer; 
+    return best;
+  }
+};
+
+// Determine best move for AI
+const bestMove = (board) => {
+  let bestValue = -Infinity, move = -1;
+  for (let i = 0; i < board.length; i++) {
+    if (board[i] === '') {
+      board[i] = 'O';
+      let moveValue = minimax(board, 0, false);
+      board[i] = '';
+      if (moveValue > bestValue) { bestValue = moveValue; move = i; }
     }
-    .cell:hover { background: #555; }
-    button { margin: 10px; padding: 10px; background: #444; color: white; border: none; cursor: pointer; }
-    button:hover { background: #666; }
-    select, input[type="number"], input[type="text"] { margin-top: 5px; padding: 5px; width: 200px; display: block; }
-    ul { list-style: none; }
-  </style>
-</head>
-<body>
-  <div>
-    <h1>Tic Tac Toe - World Domination Edition</h1>
-  </div>
-  <div class="game-container">
-    <!-- Player Info -->
-    <div class="section" id="playerInfo">
-      <label for="playerName">Enter your name:</label>
-      <input type="text" id="playerName" placeholder="Player Name" />
-      <button id="saveNameButton">Save Name</button>
-      <p id="nameConfirmation"></p>
-      <p id="playerDisplay"></p>
-    </div>
+  }
+  return move;
+};
 
-    <!-- Core Game Board -->
-    <div class="section" id="gameBoardSection">
-      <div class="board">
-        <div class="cell" onclick="handlePlayerMove(0)"></div>
-        <div class="cell" onclick="handlePlayerMove(1)"></div>
-        <div class="cell" onclick="handlePlayerMove(2)"></div>
-        <div class="cell" onclick="handlePlayerMove(3)"></div>
-        <div class="cell" onclick="handlePlayerMove(4)"></div>
-        <div class="cell" onclick="handlePlayerMove(5)"></div>
-        <div class="cell" onclick="handlePlayerMove(6)"></div>
-        <div class="cell" onclick="handlePlayerMove(7)"></div>
-        <div class="cell" onclick="handlePlayerMove(8)"></div>
-      </div>
-      <div class="info">
-        <p>Current Player: <span id="currentPlayer">Player</span></p>
-        <p>Money: $<span id="money">0</span></p>
-        <button id="restartButton">Restart Game</button>
-      </div>
-    </div>
+// Check winner on board
+function checkWinner(board) {
+  const patterns = [
+    [0,1,2],[3,4,5],[6,7,8],
+    [0,3,6],[1,4,7],[2,5,8],
+    [0,4,8],[2,4,6]
+  ];
+  for (let pat of patterns) {
+    const [a,b,c] = pat;
+    if (board[a] && board[a] === board[b] && board[a] === board[c]) return board[a];
+  }
+  return null;
+}
 
-    <!-- Expanded Country Selection -->
-    <div class="section" id="countrySelection">
-      <h3>Choose Country to Fight</h3>
-      <!-- Real-life countries -->
-      <button class="country-btn" onclick="startFight('USA', 10)">USA</button>
-      <button class="country-btn" onclick="startFight('Russia', 8)">Russia</button>
-      <button class="country-btn" onclick="startFight('China', 9)">China</button>
-      <button class="country-btn" onclick="startFight('Brazil', 5)">Brazil</button>
-      <button class="country-btn" onclick="startFight('India', 6)">India</button>
-      <button class="country-btn" onclick="startFight('Germany', 7)">Germany</button>
-      <button class="country-btn" onclick="startFight('Canada', 6)">Canada</button>
-      <button class="country-btn" onclick="startFight('Australia', 4)">Australia</button>
-      <button class="country-btn" onclick="startFight('Nigeria', 3)">Nigeria</button>
-      <button class="country-btn" onclick="startFight('Mexico', 5)">Mexico</button>
-      <button class="country-btn" onclick="startFight('UK', 8)">UK</button>
-      <button class="country-btn" onclick="startFight('France', 7)">France</button>
-      <button class="country-btn" onclick="startFight('Japan', 9)">Japan</button>
-      <button class="country-btn" onclick="startFight('South Korea', 8)">South Korea</button>
-      <button class="country-btn" onclick="startFight('Italy', 7)">Italy</button>
-      <button class="country-btn" onclick="startFight('Spain', 6)">Spain</button>
-      <button class="country-btn" onclick="startFight('Turkey', 7)">Turkey</button>
-      <button class="country-btn" onclick="startFight('South Africa', 4)">South Africa</button>
-      <!-- Fictional countries -->
-      <button class="country-btn" onclick="startFight('Zorg', 9)">Zorg</button>
-      <button class="country-btn" onclick="startFight('Xandar', 8)">Xandar</button>
-      <button class="country-btn" onclick="startFight('Nova', 7)">Nova</button>
-      <button class="country-btn" onclick="startFight('Aurora', 6)">Aurora</button>
-    </div>
+// Handle player's move on the board
+function handlePlayerMove(index) {
+  // Prevent fighting eliminated countries or allies
+  if (!(currentCountry in countryStrengths)) {
+    alert(`${currentCountry} has been eliminated! Choose another country.`);
+    return;
+  }
+  if (playerAlliances.includes(currentCountry)) {
+    alert(`You are allied with ${currentCountry} and cannot fight them.`);
+    return;
+  }
+  triggerRandomEvent();
+  if (gameBoard[index] === '' && currentPlayer === 'X') {
+    gameBoard[index] = playerShape;
+    renderBoard();
+    if (checkWinner(gameBoard)) {
+      const reward = 200 * (1 + (countryStrength / 10));
+      money += reward;
+      setTimeout(() => alert(`Player wins! You earned $${reward.toFixed(0)} – Cha-ching!`), 100);
+      localStorage.setItem('money', money);
+      updateMoney();
+      return;
+    }
+    currentPlayer = 'O';
+    aiMove();
+  }
+}
 
-    <!-- Diplomacy Section -->
-    <div class="section" id="diplomacy">
-      <h3>Diplomacy</h3>
-      <label for="diplomacyCountry">Select Country:</label>
-      <select id="diplomacyCountry">
-        <!-- Options match extended countries -->
-        <option value="USA">USA</option>
-        <option value="Russia">Russia</option>
-        <option value="China">China</option>
-        <option value="Brazil">Brazil</option>
-        <option value="India">India</option>
-        <option value="Germany">Germany</option>
-        <option value="Canada">Canada</option>
-        <option value="Australia">Australia</option>
-        <option value="Nigeria">Nigeria</option>
-        <option value="Mexico">Mexico</option>
-        <option value="UK">UK</option>
-        <option value="France">France</option>
-        <option value="Japan">Japan</option>
-        <option value="South Korea">South Korea</option>
-        <option value="Italy">Italy</option>
-        <option value="Spain">Spain</option>
-        <option value="Turkey">Turkey</option>
-        <option value="South Africa">South Africa</option>
-        <option value="Zorg">Zorg</option>
-        <option value="Xandar">Xandar</option>
-        <option value="Nova">Nova</option>
-        <option value="Aurora">Aurora</option>
-      </select>
-      <label for="diplomacyAmount">Amount to Send:</label>
-      <input type="number" id="diplomacyAmount" placeholder="Enter amount" />
-      <button id="sendDiplomacyButton">Send Money</button>
-      <p id="diplomacyResult"></p>
-    </div>
+// AI move
+function aiMove() {
+  let move = (countryStrength < 5) ? weakCountryMistakes(gameBoard) : bestMove(gameBoard);
+  if (move === undefined || move === -1) { currentPlayer = 'X'; return; }
+  gameBoard[move] = 'O';
+  renderBoard();
+  if (checkWinner(gameBoard)) {
+    setTimeout(() => alert("AI wins! Better luck next time."), 100);
+  } else {
+    currentPlayer = 'X';
+  }
+}
 
-    <!-- Form Alliance Section -->
-    <div class="section" id="formAlliance">
-      <h3>Form Alliance</h3>
-      <label for="formAllianceCountry">Select Country to Ally With:</label>
-      <select id="formAllianceCountry">
-        <!-- Options as above -->
-        <option value="USA">USA</option>
-        <option value="Russia">Russia</option>
-        <option value="China">China</option>
-        <option value="Brazil">Brazil</option>
-        <option value="India">India</option>
-        <option value="Germany">Germany</option>
-        <option value="Canada">Canada</option>
-        <option value="Australia">Australia</option>
-        <option value="Nigeria">Nigeria</option>
-        <option value="Mexico">Mexico</option>
-        <option value="UK">UK</option>
-        <option value="France">France</option>
-        <option value="Japan">Japan</option>
-        <option value="South Korea">South Korea</option>
-        <option value="Italy">Italy</option>
-        <option value="Spain">Spain</option>
-        <option value="Turkey">Turkey</option>
-        <option value="South Africa">South Africa</option>
-        <option value="Zorg">Zorg</option>
-        <option value="Xandar">Xandar</option>
-        <option value="Nova">Nova</option>
-        <option value="Aurora">Aurora</option>
-      </select>
-      <button onclick="formAlliance(document.getElementById('formAllianceCountry').value)">Form Alliance</button>
-      <p id="allianceFormResult"></p>
-      <h4>Your Alliances:</h4>
-      <div id="playerAlliancesDisplay"></div>
-    </div>
+// For weaker countries, allow random mistake moves
+function weakCountryMistakes(board) {
+  if (Math.random() < 0.5) {
+    let available = [];
+    for (let i = 0; i < board.length; i++) {
+      if (board[i] === '') available.push(i);
+    }
+    return available[Math.floor(Math.random() * available.length)];
+  }
+  return bestMove(board);
+}
 
-    <!-- Alliance Overview Section -->
-    <div class="section" id="allianceOverview">
-      <h3>Alliance Overview</h3>
-      <div id="alliancesDisplay"></div>
-    </div>
+// Render board
+function renderBoard() {
+  const cells = document.querySelectorAll('.cell');
+  gameBoard.forEach((val, idx) => { cells[idx].textContent = val; });
+  document.getElementById('currentPlayer').textContent = currentPlayer === 'X' ? 'Player' : 'AI';
+}
 
-    <!-- Alliance War Section -->
-    <div class="section" id="allianceWar">
-      <h3>Start Alliance War</h3>
-      <label for="warAlliance">Select Alliance:</label>
-      <select id="warAlliance">
-        <option value="Western Alliance">Western Alliance (USA, UK, France, Germany, Canada, Australia)</option>
-        <option value="Eastern Bloc">Eastern Bloc (Russia, China, India, Brazil, Mexico)</option>
-        <option value="Mediterranean Union">Mediterranean Union (Italy, Spain, Turkey)</option>
-        <option value="Asia-Pacific">Asia-Pacific (Japan, South Korea, Australia)</option>
-        <option value="African Coalition">African Coalition (Nigeria, South Africa)</option>
-        <option value="Rebel Alliance">Rebel Alliance (Zorg, Xandar)</option>
-        <option value="Intergalactic Coalition">Intergalactic Coalition (Nova, Aurora)</option>
-      </select>
-      <button onclick="startAllianceWar(document.getElementById('warAlliance').value)">Start War</button>
-      <p id="warResult"></p>
-    </div>
+// Restart game
+function restartGame() {
+  gameBoard = ['', '', '', '', '', '', '', '', ''];
+  currentPlayer = 'X';
+  renderBoard();
+  localStorage.setItem('gameBoard', JSON.stringify(gameBoard));
+}
 
-    <!-- Alliance Upgrade Shop -->
-    <div class="section" id="allianceShop">
-      <h3>Alliance Upgrades</h3>
-      <button onclick="buyUpgrade('Spy Drone')">Buy Spy Drone ($5000)</button>
-      <button onclick="buyUpgrade('Cyber Warfare')">Buy Cyber Warfare Upgrade ($10000)</button>
-      <button onclick="buyUpgrade('Diplomatic Immunity')">Buy Diplomatic Immunity ($15000)</button>
-      <button onclick="buyUpgrade('Nuke')">Buy Nuke ($1000000)</button>
-      <button onclick="buyUpgrade('Economic Sanctions')">Buy Economic Sanctions ($8000)</button>
-      <button onclick="buyUpgrade('Propaganda Campaign')">Buy Propaganda Campaign ($5000)</button>
-      <div id="upgradeResult"></div>
-    </div>
+// Start fight with a country (if not allied or eliminated)
+function startFight(country, strength) {
+  if (!(country in countryStrengths)) {
+    alert(`${country} has been eliminated and cannot be challenged.`);
+    return;
+  }
+  if (playerAlliances.includes(country)) {
+    alert(`You are allied with ${country} and cannot fight them.`);
+    return;
+  }
+  currentCountry = country;
+  countryStrength = countryStrengths[country] || 0;
+  localStorage.setItem('currentCountry', country);
+  alert(`Gear up! You're now fighting ${country} – prepare for a tough match!`);
+}
 
-    <!-- Country Relations Display -->
-    <div class="section" id="relationsSection">
-      <h3>Country Relations</h3>
-      <div id="relationsDisplay"></div>
-    </div>
-
-    <!-- Heist Minigame Section -->
-    <div class="section" id="heistSection">
-      <h3>Heist Minigame</h3>
-      <p>Set your heist parameters and try your luck!</p>
-      <label for="heistBudget">Budget ($):</label>
-      <input type="number" id="heistBudget" placeholder="Enter budget" />
-      <label for="heistVehicle">Vehicle:</label>
-      <select id="heistVehicle">
-        <option value="Car">Car</option>
-        <option value="Motorcycle">Motorcycle</option>
-        <option value="Van">Van</option>
-        <option value="Helicopter">Helicopter</option>
-        <option value="Banana Car">Banana Car</option>
-        <option value="Rickshaw">Rickshaw</option>
-        <option value="Hoverboard">Hoverboard</option>
-        <option value="Spaceship">Spaceship</option>
-      </select>
-      <label for="heistLocation">Location:</label>
-      <select id="heistLocation">
-        <option value="Bank">Bank</option>
-        <option value="Casino">Casino</option>
-        <option value="Museum">Museum</option>
-        <option value="Jewelry Store">Jewelry Store</option>
-        <option value="Ice Cream Parlor">Ice Cream Parlor</option>
-        <option value="Candy Factory">Candy Factory</option>
-        <option value="Roller Disco">Roller Disco</option>
-        <option value="Secret Lair">Secret Lair</option>
-      </select>
-      <label for="heistWeapon">Weapon:</label>
-      <select id="heistWeapon">
-        <option value="Pistol">Pistol</option>
-        <option value="Shotgun">Shotgun</option>
-        <option value="Rifle">Rifle</option>
-        <option value="None">None</option>
-        <option value="Rubber Chicken">Rubber Chicken</option>
-        <option value="Water Gun">Water Gun</option>
-        <option value="Banana Peel">Banana Peel</option>
-        <option value="Feather Duster">Feather Duster</option>
-      </select>
-      <label for="heistDisguise">Disguise:</label>
-      <select id="heistDisguise">
-        <option value="Mask">Mask</option>
-        <option value="Suit">Suit</option>
-        <option value="Casual">Casual</option>
-        <option value="None">None</option>
-        <option value="Giant Chicken Costume">Giant Chicken Costume</option>
-        <option value="Clown Outfit">Clown Outfit</option>
-        <option value="Zombie Costume">Zombie Costume</option>
-        <option value="SpongeBob Costume">SpongeBob Costume</option>
-      </select>
-      <label for="heistGadget">Choose a Gadget:</label>
-      <select id="heistGadget">
-        <option value="Hacking Device">Hacking Device</option>
-        <option value="EMP">EMP</option>
-        <option value="Grappling Hook">Grappling Hook</option>
-        <option value="Smoke Bomb">Smoke Bomb</option>
-        <option value="Silly String">Silly String</option>
-        <option value="Whoopee Cushion">Whoopee Cushion</option>
-        <option value="Exploding Cake">Exploding Cake</option>
-        <option value="Magic Wand">Magic Wand</option>
-      </select>
-      <button id="attemptHeistButton">Attempt Heist</button>
-      <p id="heistResult"></p>
-    </div>
-  </div>
-
-  <!-- Load core game logic first, then alliance system -->
-  <script src="game.js"></script>
-  <script src="alliance.js"></script>
-</body>
-</html>
+// Heist minigame
+function attemptHeist() {
+  let budget = parseInt(document.getElementById('heistBudget').value);
+  if (isNaN(budget) || budget <= 0) { alert("Enter a valid budget (>0)."); return; }
+  if (budget > money) { alert("Budget exceeds available money!"); return; }
+  let vehicle = document.getElementById('heistVehicle').value;
+  let location = document.getElementById('heistLocation').value;
+  let weapon = document.getElementById('heistWeapon').value;
+  let disguise = document.getElementById('heistDisguise').value;
+  let gadget = document.getElementById('heistGadget').value;
+  
+  let baseChance = 30;
+  let winChance = baseChance +
+    (heistBonuses.vehicle[vehicle]||0) +
+    (heistBonuses.location[location]||0) +
+    (heistBonuses.weapon[weapon]||0) +
+    (heistBonuses.disguise[disguise]||0) +
+    (heistBonuses.gadget[gadget]||0);
+  winChance = Math.max(5, Math.min(95, winChance));
+  
+  let roll = Math.random() * 100;
+  let resultText = "";
+  if (roll < winChance) {
+    let winnings = budget * 2;
+    money += winnings;
+    resultText = `Heist Successful! You earned $${winnings}.`;
+  } else {
+    money -= budget;
+    if (money < 0) money = 0;
+    resultText = `Heist Failed! You lost $${budget}.`;
+  }
+  document.getElementById('heistResult').textContent = resultText;
+  localStorage.setItem('money', money);
+  updateMoney();
+}
