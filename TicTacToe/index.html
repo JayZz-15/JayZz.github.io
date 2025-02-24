@@ -10,7 +10,7 @@
     body { background: black; color: white; display: flex; flex-direction: column; }
     .game-container { 
       overflow: auto; 
-      height: 80vh; 
+      height: 90vh; 
       padding: 20px;
     }
     .board { 
@@ -31,34 +31,21 @@
       cursor: pointer; 
     }
     .cell:hover { background: #555; }
-    .info { margin-top: 20px; font-size: 1.2em; }
-    .shop, .alliance-shop { margin-top: 20px; }
-    .shop button, .alliance-shop button { margin: 10px; padding: 10px; background: #444; color: white; border: none; cursor: pointer; }
-    .shop button:hover, .alliance-shop button:hover { background: #666; }
-    .countries { display: flex; flex-direction: column; margin: 20px; }
-    .country-btn { padding: 10px; margin: 10px; background: #444; color: white; border: none; cursor: pointer; }
-    .country-btn:hover { background: #666; }
-    .diplomacy { margin-top: 20px; border: 2px solid #444; padding: 10px; }
-    .diplomacy label, .diplomacy select, .diplomacy input, .diplomacy button { margin-top: 5px; display: block; }
-    .diplomacy button { padding: 10px; background: #444; color: white; border: none; cursor: pointer; }
-    .diplomacy button:hover { background: #666; }
-    .heist { margin-top: 30px; padding: 10px; border: 2px solid #444; }
-    .heist h3 { font-size: 1.5em; margin-bottom: 10px; }
-    .heist label { display: block; margin-top: 10px; }
-    .heist input, .heist select { margin-top: 5px; padding: 5px; width: 200px; }
-    .heist button { margin-top: 15px; padding: 10px; background: #444; color: white; border: none; cursor: pointer; }
-    .heist button:hover { background: #666; }
-    .heist p { margin-top: 10px; font-size: 1.2em; }
-    .relations, .alliances { margin-top: 20px; border: 2px solid #444; padding: 10px; }
+    .info, .section { margin-top: 20px; font-size: 1.2em; }
+    .section { border: 2px solid #444; padding: 10px; }
+    button { margin: 10px; padding: 10px; background: #444; color: white; border: none; cursor: pointer; }
+    button:hover { background: #666; }
+    select, input[type="number"], input[type="text"] { margin-top: 5px; padding: 5px; width: 200px; display: block; }
+    ul { list-style: none; }
   </style>
 </head>
 <body>
   <div>
-    <h1>Tic Tac Toe - Complex Version</h1>
+    <h1>Tic Tac Toe - World Domination Edition</h1>
   </div>
   <div class="game-container">
     <!-- Player Info -->
-    <div class="info">
+    <div class="section info">
       <label for="playerName">Enter your name:</label>
       <input type="text" id="playerName" placeholder="Player Name" />
       <button id="saveNameButton">Save Name</button>
@@ -66,8 +53,8 @@
       <p id="playerDisplay"></p>
     </div>
 
-    <!-- Game Board -->
-    <div class="board">
+    <!-- Core Game Board -->
+    <div class="section board" id="gameBoardSection">
       <div class="cell" onclick="handlePlayerMove(0)"></div>
       <div class="cell" onclick="handlePlayerMove(1)"></div>
       <div class="cell" onclick="handlePlayerMove(2)"></div>
@@ -78,16 +65,16 @@
       <div class="cell" onclick="handlePlayerMove(7)"></div>
       <div class="cell" onclick="handlePlayerMove(8)"></div>
     </div>
-
-    <div class="info">
+    <div class="section info">
       <p>Current Player: <span id="currentPlayer">Player</span></p>
       <p>Money: $<span id="money">0</span></p>
       <button id="restartButton">Restart Game</button>
     </div>
 
     <!-- Expanded Country Selection -->
-    <div class="countries">
+    <div class="section countries">
       <h3>Choose Country to Fight</h3>
+      <!-- (All extended countries available) -->
       <button class="country-btn" onclick="startFight('USA', 10)">USA</button>
       <button class="country-btn" onclick="startFight('Russia', 8)">Russia</button>
       <button class="country-btn" onclick="startFight('China', 9)">China</button>
@@ -109,7 +96,7 @@
     </div>
 
     <!-- Diplomacy Section -->
-    <div class="diplomacy">
+    <div class="section diplomacy">
       <h3>Diplomacy</h3>
       <label for="diplomacyCountry">Select Country:</label>
       <select id="diplomacyCountry">
@@ -139,30 +126,70 @@
       <p id="diplomacyResult"></p>
     </div>
 
-    <!-- Country Relations Display -->
-    <div class="relations">
-      <h3>Country Relations</h3>
-      <div id="relationsDisplay"></div>
+    <!-- Form Alliance Section -->
+    <div class="section alliances">
+      <h3>Form Alliance</h3>
+      <label for="formAllianceCountry">Select Country to Ally With:</label>
+      <select id="formAllianceCountry">
+        <!-- Options as above -->
+        <option value="USA">USA</option>
+        <option value="Russia">Russia</option>
+        <option value="China">China</option>
+        <option value="Brazil">Brazil</option>
+        <option value="India">India</option>
+        <option value="Germany">Germany</option>
+        <option value="Canada">Canada</option>
+        <option value="Australia">Australia</option>
+        <option value="Nigeria">Nigeria</option>
+        <option value="Mexico">Mexico</option>
+        <option value="UK">UK</option>
+        <option value="France">France</option>
+        <option value="Japan">Japan</option>
+        <option value="South Korea">South Korea</option>
+        <option value="Italy">Italy</option>
+        <option value="Spain">Spain</option>
+        <option value="Turkey">Turkey</option>
+        <option value="South Africa">South Africa</option>
+      </select>
+      <button onclick="formAlliance(document.getElementById('formAllianceCountry').value)">Form Alliance</button>
+      <p id="allianceFormResult"></p>
+      <h4>Your Alliances:</h4>
+      <div id="playerAlliancesDisplay"></div>
     </div>
 
     <!-- Alliance Overview -->
-    <div class="alliances">
+    <div class="section alliances">
       <h3>Alliance Overview</h3>
       <div id="alliancesDisplay"></div>
     </div>
 
+    <!-- Alliance War Section -->
+    <div class="section alliance-war">
+      <h3>Start Alliance War</h3>
+      <label for="warAlliance">Select Alliance:</label>
+      <select id="warAlliance">
+        <option value="Western Alliance">Western Alliance</option>
+        <option value="Eastern Bloc">Eastern Bloc</option>
+        <option value="Mediterranean Union">Mediterranean Union</option>
+        <option value="Asia-Pacific">Asia-Pacific</option>
+        <option value="African Coalition">African Coalition</option>
+      </select>
+      <button onclick="startAllianceWar(document.getElementById('warAlliance').value)">Start War</button>
+      <p id="warResult"></p>
+    </div>
+
     <!-- Alliance Upgrade Shop -->
-    <div class="alliance-shop">
+    <div class="section alliance-shop">
       <h3>Alliance Upgrades</h3>
-      <button onclick="buyUpgrade('Spy Drone')">Buy Spy Drone ($500)</button>
-      <button onclick="buyUpgrade('Cyber Warfare')">Buy Cyber Warfare Upgrade ($1000)</button>
-      <button onclick="buyUpgrade('Diplomatic Immunity')">Buy Diplomatic Immunity ($1500)</button>
-      <button onclick="buyUpgrade('Nuke')">Buy Nuke ($2000)</button>
+      <button onclick="buyUpgrade('Spy Drone')">Buy Spy Drone ($5000)</button>
+      <button onclick="buyUpgrade('Cyber Warfare')">Buy Cyber Warfare Upgrade ($10000)</button>
+      <button onclick="buyUpgrade('Diplomatic Immunity')">Buy Diplomatic Immunity ($15000)</button>
+      <button onclick="buyUpgrade('Nuke')">Buy Nuke ($20000)</button>
       <div id="upgradeResult"></div>
     </div>
 
     <!-- Heist Minigame -->
-    <div class="heist">
+    <div class="section heist">
       <h3>Heist Minigame</h3>
       <p>Set your heist parameters and try your luck!</p>
       <label for="heistBudget">Budget ($):</label>
@@ -227,7 +254,7 @@
     </div>
   </div>
 
-  <!-- Load the core game logic first, then the alliance system -->
+  <!-- Load core game then alliance system -->
   <script src="game.js"></script>
   <script src="alliance.js"></script>
 </body>
