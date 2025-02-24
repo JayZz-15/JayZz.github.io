@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Ticked Tacked Toed</title>
+  <title>Ticked Tacked Toed - World Domination Edition</title>
   <style>
     /* Basic styling – tweak as desired */
     * { margin: 0; padding: 0; box-sizing: border-box; font-family: Arial, sans-serif; }
@@ -13,12 +13,13 @@
       height: 90vh; 
       padding: 20px;
     }
+    .section { margin-top: 20px; padding: 10px; border: 2px solid #444; }
     .board { 
       display: grid; 
       grid-template-columns: repeat(3, 100px); 
       grid-gap: 10px; 
       justify-content: center; 
-      margin-top: 50px; 
+      margin-top: 20px; 
     }
     .cell { 
       width: 100px; 
@@ -31,8 +32,6 @@
       cursor: pointer; 
     }
     .cell:hover { background: #555; }
-    .info, .section { margin-top: 20px; font-size: 1.2em; }
-    .section { border: 2px solid #444; padding: 10px; }
     button { margin: 10px; padding: 10px; background: #444; color: white; border: none; cursor: pointer; }
     button:hover { background: #666; }
     select, input[type="number"], input[type="text"] { margin-top: 5px; padding: 5px; width: 200px; display: block; }
@@ -45,7 +44,7 @@
   </div>
   <div class="game-container">
     <!-- Player Info -->
-    <div class="section info">
+    <div class="section" id="playerInfo">
       <label for="playerName">Enter your name:</label>
       <input type="text" id="playerName" placeholder="Player Name" />
       <button id="saveNameButton">Save Name</button>
@@ -54,27 +53,29 @@
     </div>
 
     <!-- Core Game Board -->
-    <div class="section board" id="gameBoardSection">
-      <div class="cell" onclick="handlePlayerMove(0)"></div>
-      <div class="cell" onclick="handlePlayerMove(1)"></div>
-      <div class="cell" onclick="handlePlayerMove(2)"></div>
-      <div class="cell" onclick="handlePlayerMove(3)"></div>
-      <div class="cell" onclick="handlePlayerMove(4)"></div>
-      <div class="cell" onclick="handlePlayerMove(5)"></div>
-      <div class="cell" onclick="handlePlayerMove(6)"></div>
-      <div class="cell" onclick="handlePlayerMove(7)"></div>
-      <div class="cell" onclick="handlePlayerMove(8)"></div>
-    </div>
-    <div class="section info">
-      <p>Current Player: <span id="currentPlayer">Player</span></p>
-      <p>Money: $<span id="money">0</span></p>
-      <button id="restartButton">Restart Game</button>
+    <div class="section" id="gameBoardSection">
+      <div class="board">
+        <div class="cell" onclick="handlePlayerMove(0)"></div>
+        <div class="cell" onclick="handlePlayerMove(1)"></div>
+        <div class="cell" onclick="handlePlayerMove(2)"></div>
+        <div class="cell" onclick="handlePlayerMove(3)"></div>
+        <div class="cell" onclick="handlePlayerMove(4)"></div>
+        <div class="cell" onclick="handlePlayerMove(5)"></div>
+        <div class="cell" onclick="handlePlayerMove(6)"></div>
+        <div class="cell" onclick="handlePlayerMove(7)"></div>
+        <div class="cell" onclick="handlePlayerMove(8)"></div>
+      </div>
+      <div class="info">
+        <p>Current Player: <span id="currentPlayer">Player</span></p>
+        <p>Money: $<span id="money">0</span></p>
+        <button id="restartButton">Restart Game</button>
+      </div>
     </div>
 
     <!-- Expanded Country Selection -->
-    <div class="section countries">
+    <div class="section" id="countrySelection">
       <h3>Choose Country to Fight</h3>
-      <!-- (All extended countries available) -->
+      <!-- Real-life countries -->
       <button class="country-btn" onclick="startFight('USA', 10)">USA</button>
       <button class="country-btn" onclick="startFight('Russia', 8)">Russia</button>
       <button class="country-btn" onclick="startFight('China', 9)">China</button>
@@ -93,10 +94,15 @@
       <button class="country-btn" onclick="startFight('Spain', 6)">Spain</button>
       <button class="country-btn" onclick="startFight('Turkey', 7)">Turkey</button>
       <button class="country-btn" onclick="startFight('South Africa', 4)">South Africa</button>
+      <!-- Fictional countries -->
+      <button class="country-btn" onclick="startFight('Zorg', 9)">Zorg</button>
+      <button class="country-btn" onclick="startFight('Xandar', 8)">Xandar</button>
+      <button class="country-btn" onclick="startFight('Nova', 7)">Nova</button>
+      <button class="country-btn" onclick="startFight('Aurora', 6)">Aurora</button>
     </div>
 
     <!-- Diplomacy Section -->
-    <div class="section diplomacy">
+    <div class="section" id="diplomacy">
       <h3>Diplomacy</h3>
       <label for="diplomacyCountry">Select Country:</label>
       <select id="diplomacyCountry">
@@ -119,6 +125,10 @@
         <option value="Spain">Spain</option>
         <option value="Turkey">Turkey</option>
         <option value="South Africa">South Africa</option>
+        <option value="Zorg">Zorg</option>
+        <option value="Xandar">Xandar</option>
+        <option value="Nova">Nova</option>
+        <option value="Aurora">Aurora</option>
       </select>
       <label for="diplomacyAmount">Amount to Send:</label>
       <input type="number" id="diplomacyAmount" placeholder="Enter amount" />
@@ -127,7 +137,7 @@
     </div>
 
     <!-- Form Alliance Section -->
-    <div class="section alliances">
+    <div class="section" id="formAlliance">
       <h3>Form Alliance</h3>
       <label for="formAllianceCountry">Select Country to Ally With:</label>
       <select id="formAllianceCountry">
@@ -150,6 +160,10 @@
         <option value="Spain">Spain</option>
         <option value="Turkey">Turkey</option>
         <option value="South Africa">South Africa</option>
+        <option value="Zorg">Zorg</option>
+        <option value="Xandar">Xandar</option>
+        <option value="Nova">Nova</option>
+        <option value="Aurora">Aurora</option>
       </select>
       <button onclick="formAlliance(document.getElementById('formAllianceCountry').value)">Form Alliance</button>
       <p id="allianceFormResult"></p>
@@ -157,39 +171,49 @@
       <div id="playerAlliancesDisplay"></div>
     </div>
 
-    <!-- Alliance Overview -->
-    <div class="section alliances">
+    <!-- Alliance Overview Section -->
+    <div class="section" id="allianceOverview">
       <h3>Alliance Overview</h3>
       <div id="alliancesDisplay"></div>
     </div>
 
     <!-- Alliance War Section -->
-    <div class="section alliance-war">
+    <div class="section" id="allianceWar">
       <h3>Start Alliance War</h3>
       <label for="warAlliance">Select Alliance:</label>
       <select id="warAlliance">
-        <option value="Western Alliance">Western Alliance</option>
-        <option value="Eastern Bloc">Eastern Bloc</option>
-        <option value="Mediterranean Union">Mediterranean Union</option>
-        <option value="Asia-Pacific">Asia-Pacific</option>
-        <option value="African Coalition">African Coalition</option>
+        <option value="Western Alliance">Western Alliance (USA, UK, France, Germany, Canada, Australia)</option>
+        <option value="Eastern Bloc">Eastern Bloc (Russia, China, India, Brazil, Mexico)</option>
+        <option value="Mediterranean Union">Mediterranean Union (Italy, Spain, Turkey)</option>
+        <option value="Asia-Pacific">Asia-Pacific (Japan, South Korea, Australia)</option>
+        <option value="African Coalition">African Coalition (Nigeria, South Africa)</option>
+        <option value="Rebel Alliance">Rebel Alliance (Zorg, Xandar)</option>
+        <option value="Intergalactic Coalition">Intergalactic Coalition (Nova, Aurora)</option>
       </select>
       <button onclick="startAllianceWar(document.getElementById('warAlliance').value)">Start War</button>
       <p id="warResult"></p>
     </div>
 
     <!-- Alliance Upgrade Shop -->
-    <div class="section alliance-shop">
+    <div class="section" id="allianceShop">
       <h3>Alliance Upgrades</h3>
       <button onclick="buyUpgrade('Spy Drone')">Buy Spy Drone ($5000)</button>
       <button onclick="buyUpgrade('Cyber Warfare')">Buy Cyber Warfare Upgrade ($10000)</button>
       <button onclick="buyUpgrade('Diplomatic Immunity')">Buy Diplomatic Immunity ($15000)</button>
-      <button onclick="buyUpgrade('Nuke')">Buy Nuke ($20000)</button>
+      <button onclick="buyUpgrade('Nuke')">Buy Nuke ($1000000)</button>
+      <button onclick="buyUpgrade('Economic Sanctions')">Buy Economic Sanctions ($8000)</button>
+      <button onclick="buyUpgrade('Propaganda Campaign')">Buy Propaganda Campaign ($5000)</button>
       <div id="upgradeResult"></div>
     </div>
 
-    <!-- Heist Minigame -->
-    <div class="section heist">
+    <!-- Country Relations Display -->
+    <div class="section" id="relationsSection">
+      <h3>Country Relations</h3>
+      <div id="relationsDisplay"></div>
+    </div>
+
+    <!-- Heist Minigame Section -->
+    <div class="section" id="heistSection">
       <h3>Heist Minigame</h3>
       <p>Set your heist parameters and try your luck!</p>
       <label for="heistBudget">Budget ($):</label>
@@ -254,7 +278,7 @@
     </div>
   </div>
 
-  <!-- Load core game then alliance system -->
+  <!-- Load core game logic first, then alliance system -->
   <script src="game.js"></script>
   <script src="alliance.js"></script>
 </body>
