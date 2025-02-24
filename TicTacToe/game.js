@@ -1,21 +1,21 @@
 // Global variables
-let gameBoard = ['', '', '', '', '', '', '', '', '']; // Empty board
-let currentPlayer = 'X'; // Player's turn starts first
-let money = 0; // Player's money
-let playerShape = 'X'; // Default player shape
-let currentCountry = ''; // Currently selected enemy country
-let countryStrength = 0; // The strength of the enemy country
+let gameBoard = ['', '', '', '', '', '', '', '', ''];
+let currentPlayer = 'X';
+let money = 0;
+let playerShape = 'X';
+let currentCountry = '';
+let countryStrength = 0;
 let playerName = '';
-let warMode = false; // Whether a war event is active
+let warMode = false;
 
-// Base Country strength levels (the alliance script will extend these)
+// Base country strengths – extended by alliance.js later
 const countryStrengths = {
   'USA': 10, 'Russia': 8, 'China': 9, 'Brazil': 5, 'India': 6,
   'Germany': 7, 'Canada': 6, 'Australia': 4, 'Nigeria': 3, 'Mexico': 5,
   'UK': 8, 'France': 7, 'Japan': 9, 'South Korea': 8
 };
 
-// Load saved data from localStorage when the page loads
+// On page load
 window.onload = () => {
   if (localStorage.getItem('playerName')) {
     playerName = localStorage.getItem('playerName');
@@ -42,7 +42,7 @@ window.onload = () => {
   document.getElementById('attemptHeistButton').addEventListener('click', attemptHeist);
 };
 
-// Save the player's name and update UI
+// Save player name
 function saveName() {
   playerName = document.getElementById('playerName').value;
   localStorage.setItem('playerName', playerName);
@@ -50,16 +50,16 @@ function saveName() {
   document.getElementById('playerDisplay').textContent = `Welcome, ${playerName}!`;
 }
 
-// Shop function for buying shapes
+// Buy a shape – costs are increased significantly
 function buyShape(shape) {
-  let cost = (shape === 'square') ? 10 : (shape === 'triangle') ? 15 : 0;
+  let cost = (shape === 'square') ? 100 : (shape === 'triangle') ? 150 : 0;
   if (money >= cost) {
     money -= cost;
     playerShape = shape;
     localStorage.setItem('money', money);
     localStorage.setItem('playerShape', shape);
     updateMoney();
-    alert(`You bought a ${shape} shape! Now you’ll be a cut above the rest!`);
+    alert(`You bought a ${shape} shape! It cost you $${cost}.`);
   } else {
     alert("Not enough money!");
   }
@@ -85,7 +85,7 @@ function weakCountryMistakes(board) {
   return bestMove(board);
 }
 
-// Minimax algorithm for AI with difficulty scaling
+// Minimax algorithm for AI
 const minimax = (board, depth, isMaximizing) => {
   const winner = checkWinner(board);
   if (winner === 'X') return -10 + depth;
@@ -93,7 +93,6 @@ const minimax = (board, depth, isMaximizing) => {
   if (!board.includes('')) return 0;
   
   const adjustedDepth = depth * (1 + countryStrength * 0.1);
-  
   if (isMaximizing) {
     let best = -Infinity;
     for (let i = 0; i < board.length; i++) {
@@ -119,7 +118,7 @@ const minimax = (board, depth, isMaximizing) => {
   }
 };
 
-// Determine the best move for the AI
+// Determine best move for AI
 const bestMove = (board) => {
   let bestValue = -Infinity;
   let move = -1;
@@ -137,7 +136,7 @@ const bestMove = (board) => {
   return move;
 };
 
-// Check if there's a winner on the board
+// Check winner on board
 function checkWinner(board) {
   const winPatterns = [
     [0, 1, 2], [3, 4, 5], [6, 7, 8],
@@ -153,8 +152,14 @@ function checkWinner(board) {
   return null;
 }
 
-// Handle player's move on the board
+// Handle player's move on board
 function handlePlayerMove(index) {
+  // Check if the current enemy country has been eliminated
+  if (!(currentCountry in countryStrengths)) {
+    alert(`${currentCountry} has been eliminated! Choose another country.`);
+    return;
+  }
+  
   if (gameBoard[index] === '' && currentPlayer === 'X') {
     gameBoard[index] = playerShape;
     renderBoard();
@@ -171,7 +176,7 @@ function handlePlayerMove(index) {
   }
 }
 
-// AI's move
+// AI move
 function aiMove() {
   let move = (countryStrength < 5) ? weakCountryMistakes(gameBoard) : bestMove(gameBoard);
   if (move === undefined || move === -1) {
@@ -187,7 +192,7 @@ function aiMove() {
   }
 }
 
-// Render the game board on screen
+// Render board
 function renderBoard() {
   const cells = document.querySelectorAll('.cell');
   gameBoard.forEach((value, index) => {
@@ -196,7 +201,7 @@ function renderBoard() {
   document.getElementById('currentPlayer').textContent = currentPlayer === 'X' ? 'Player' : 'AI';
 }
 
-// Restart the game
+// Restart game
 function restartGame() {
   gameBoard = ['', '', '', '', '', '', '', '', ''];
   currentPlayer = 'X';
@@ -204,15 +209,19 @@ function restartGame() {
   localStorage.setItem('gameBoard', JSON.stringify(gameBoard));
 }
 
-// Start a fight with a country (select enemy)
+// Start fight with country (if the country exists)
 function startFight(country, strength) {
+  if (!(country in countryStrengths)) {
+    alert(`${country} has been eliminated and cannot be challenged.`);
+    return;
+  }
   currentCountry = country;
   countryStrength = countryStrengths[country] || 0;
   localStorage.setItem('currentCountry', country);
   alert(`Gear up! You're now fighting ${country} – let the epic showdown commence!`);
 }
   
-// ---------- Heist Minigame Functions ----------
+// Heist minigame (costs remain roughly similar; you may adjust multipliers as needed)
 function attemptHeist() {
   let budget = parseInt(document.getElementById('heistBudget').value);
   if (isNaN(budget) || budget <= 0) {
@@ -246,18 +255,18 @@ function attemptHeist() {
     let winnings = budget * 2;
     money += winnings;
     const successMessages = [
-      `Heist Successful! Your ${gadget} and ${vehicle} made the perfect combo to rob the ${location}. You earned $${winnings}!`,
-      `Victory! The ${weapon} and ${disguise} got you past security at the ${location}. You've doubled your money to $${winnings}!`,
-      `Smooth heist! With a dash of ${gadget} and a hint of ${disguise}, the ${location} was a cakewalk. You scored $${winnings}!`
+      `Heist Successful! Your ${gadget} and ${vehicle} were unstoppable. You earned $${winnings}!`,
+      `Victory! The ${weapon} and ${disguise} combo got you past security at the ${location}.`,
+      `Smooth heist! You scored $${winnings}!`
     ];
     resultText = successMessages[Math.floor(Math.random() * successMessages.length)];
   } else {
     money -= budget;
     if (money < 0) money = 0;
     const failureMessages = [
-      `Heist Failed! Your ${gadget} malfunctioned and the ${vehicle} broke down at the ${location}. You lost $${budget}.`,
-      `Disaster! The ${weapon} was more of a prop and your ${disguise} didn't fool anyone at the ${location}. Lost $${budget}.`,
-      `Ouch! The plan went sideways – your ${gadget} and ${vehicle} couldn't save you at the ${location}. You lost $${budget}.`
+      `Heist Failed! Your ${gadget} malfunctioned at the ${location}. You lost $${budget}.`,
+      `Disaster! The plan fell apart and you lost $${budget}.`,
+      `Ouch! You lost $${budget} on a botched heist.`
     ];
     resultText = failureMessages[Math.floor(Math.random() * failureMessages.length)];
   }
