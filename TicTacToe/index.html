@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Ticked Tacked Toed</title>
   <style>
+    /* Basic styling – feel free to customize */
     * { margin: 0; padding: 0; box-sizing: border-box; font-family: Arial, sans-serif; }
     body { background: black; color: white; display: flex; flex-direction: column; }
     .game-container { 
@@ -31,9 +32,9 @@
     }
     .cell:hover { background: #555; }
     .info { margin-top: 20px; font-size: 1.2em; }
-    .shop { margin-top: 20px; }
-    .shop button { margin: 10px; padding: 10px; background: #444; color: white; border: none; cursor: pointer; }
-    .shop button:hover { background: #666; }
+    .shop, .alliance-shop { margin-top: 20px; }
+    .shop button, .alliance-shop button { margin: 10px; padding: 10px; background: #444; color: white; border: none; cursor: pointer; }
+    .shop button:hover, .alliance-shop button:hover { background: #666; }
     .countries { display: flex; flex-direction: column; margin: 20px; }
     .country-btn { padding: 10px; margin: 10px; background: #444; color: white; border: none; cursor: pointer; }
     .country-btn:hover { background: #666; }
@@ -48,6 +49,7 @@
     .heist button { margin-top: 15px; padding: 10px; background: #444; color: white; border: none; cursor: pointer; }
     .heist button:hover { background: #666; }
     .heist p { margin-top: 10px; font-size: 1.2em; }
+    .relations { margin-top: 20px; border: 2px solid #444; padding: 10px; }
   </style>
 </head>
 <body>
@@ -55,16 +57,16 @@
     <h1>Tic Tac Toe - Complex Version</h1>
   </div>
   <div class="game-container">
-    <!-- Player info area -->
+    <!-- Player Info -->
     <div class="info">
-      <label for="playerName">Enter your name: </label>
+      <label for="playerName">Enter your name:</label>
       <input type="text" id="playerName" placeholder="Player Name" />
       <button id="saveNameButton">Save Name</button>
       <p id="nameConfirmation"></p>
       <p id="playerDisplay"></p>
     </div>
 
-    <!-- Game board -->
+    <!-- Game Board -->
     <div class="board">
       <div class="cell" onclick="handlePlayerMove(0)"></div>
       <div class="cell" onclick="handlePlayerMove(1)"></div>
@@ -83,7 +85,7 @@
       <button id="restartButton">Restart Game</button>
     </div>
 
-    <!-- Country selection -->
+    <!-- Country Selection (Expanded) -->
     <div class="countries">
       <h3>Choose Country to Fight</h3>
       <button class="country-btn" onclick="startFight('USA', 10)">USA</button>
@@ -96,6 +98,10 @@
       <button class="country-btn" onclick="startFight('Australia', 4)">Australia</button>
       <button class="country-btn" onclick="startFight('Nigeria', 3)">Nigeria</button>
       <button class="country-btn" onclick="startFight('Mexico', 5)">Mexico</button>
+      <button class="country-btn" onclick="startFight('UK', 8)">UK</button>
+      <button class="country-btn" onclick="startFight('France', 7)">France</button>
+      <button class="country-btn" onclick="startFight('Japan', 9)">Japan</button>
+      <button class="country-btn" onclick="startFight('South Korea', 8)">South Korea</button>
     </div>
 
     <!-- Diplomacy Section -->
@@ -113,22 +119,43 @@
         <option value="Australia">Australia</option>
         <option value="Nigeria">Nigeria</option>
         <option value="Mexico">Mexico</option>
+        <option value="UK">UK</option>
+        <option value="France">France</option>
+        <option value="Japan">Japan</option>
+        <option value="South Korea">South Korea</option>
+        <option value="Italy">Italy</option>
+        <option value="Spain">Spain</option>
+        <option value="Turkey">Turkey</option>
+        <option value="South Africa">South Africa</option>
       </select>
       <label for="diplomacyAmount">Amount to Send:</label>
       <input type="number" id="diplomacyAmount" placeholder="Enter amount" />
       <button id="sendDiplomacyButton">Send Money</button>
       <p id="diplomacyResult"></p>
+    </div>
+
+    <!-- Country Relations Display -->
+    <div class="relations">
+      <h3>Country Relations</h3>
       <div id="relationsDisplay"></div>
     </div>
 
-    <!-- Heist minigame area -->
+    <!-- Alliance Shop Section -->
+    <div class="alliance-shop">
+      <h3>Alliance Upgrades</h3>
+      <button onclick="buyUpgrade('Spy Drone')">Buy Spy Drone ($50)</button>
+      <button onclick="buyUpgrade('Cyber Warfare')">Buy Cyber Warfare Upgrade ($100)</button>
+      <button onclick="buyUpgrade('Diplomatic Immunity')">Buy Diplomatic Immunity ($150)</button>
+      <button onclick="buyUpgrade('Nuclear Option')">Buy Nuclear Option ($200)</button>
+      <div id="upgradeResult"></div>
+    </div>
+
+    <!-- Heist Minigame Area -->
     <div class="heist">
       <h3>Heist Minigame</h3>
       <p>Set your heist parameters and try your luck!</p>
-      
       <label for="heistBudget">Budget ($):</label>
       <input type="number" id="heistBudget" placeholder="Enter budget" />
-      
       <label for="heistVehicle">Vehicle:</label>
       <select id="heistVehicle">
         <option value="Car">Car</option>
@@ -140,7 +167,6 @@
         <option value="Hoverboard">Hoverboard</option>
         <option value="Spaceship">Spaceship</option>
       </select>
-      
       <label for="heistLocation">Location:</label>
       <select id="heistLocation">
         <option value="Bank">Bank</option>
@@ -152,7 +178,6 @@
         <option value="Roller Disco">Roller Disco</option>
         <option value="Secret Lair">Secret Lair</option>
       </select>
-      
       <label for="heistWeapon">Weapon:</label>
       <select id="heistWeapon">
         <option value="Pistol">Pistol</option>
@@ -164,7 +189,6 @@
         <option value="Banana Peel">Banana Peel</option>
         <option value="Feather Duster">Feather Duster</option>
       </select>
-      
       <label for="heistDisguise">Disguise:</label>
       <select id="heistDisguise">
         <option value="Mask">Mask</option>
@@ -176,7 +200,6 @@
         <option value="Zombie Costume">Zombie Costume</option>
         <option value="SpongeBob Costume">SpongeBob Costume</option>
       </select>
-      
       <label for="heistGadget">Choose a Gadget:</label>
       <select id="heistGadget">
         <option value="Hacking Device">Hacking Device</option>
@@ -188,12 +211,14 @@
         <option value="Exploding Cake">Exploding Cake</option>
         <option value="Magic Wand">Magic Wand</option>
       </select>
-      
       <button id="attemptHeistButton">Attempt Heist</button>
       <p id="heistResult"></p>
     </div>
   </div>
 
+  <!-- Load the core game logic first, then the alliance/diplomacy system -->
   <script src="game.js"></script>
+  <script src="alliance.js"></script>
 </body>
 </html>
+
